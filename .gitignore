@@ -1,0 +1,13 @@
+# Entorno virtual y variables locales
+.venv/
+.env
+
+# Base de datos local y archivos Python generados
+instance/*.sqlite3
+__pycache__/
+*.py[cod]
+
+# Resultados de pruebas
+.pytest_cache/
+htmlcov/
+.coverage

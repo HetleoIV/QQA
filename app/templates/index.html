@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+
+{% block title %}Q.A.A. — Tu bienestar, nuestra prioridad{% endblock %}
+
+{% block content %}
+  <section class="hero section" id="inicio" aria-labelledby="hero-title">
+    <div class="wrap hero-grid">
+      <div class="hero-copy" data-enter>
+        <p class="eyebrow"><span class="eyebrow-line" aria-hidden="true"></span> Propuesta académica · Ica, Perú</p>
+        <h1 id="hero-title">Q.A.A. <span>Evaluación, Acompañamiento y Asesoría</span></h1>
+        <p class="hero-lede">Un proyecto de consultoría integral que reúne orientación psicológica, legal y nutricional.</p>
+        <p class="hero-motto">Tu bienestar, nuestra prioridad.</p>
+        <a class="button" href="#cita">Solicitar una cita <span aria-hidden="true">↗</span></a>
+        <p class="hero-disclaimer">Proyecto universitario en desarrollo. La solicitud de demostración no se guarda ni confirma una cita.</p>
+      </div>
+      <figure class="hero-image">
+        <img src="{{ url_for('static', filename='img/sala-referencial.jpg') }}" alt="Sala de reunión luminosa con mesa de madera y sillas; imagen referencial para el proyecto académico." fetchpriority="high">
+      </figure>
+    </div>
+    <div class="wrap hero-bottom">
+      <span>Psicología</span><span>Asesoría legal</span><span>Orientación nutricional</span>
+      <a href="#nosotros">Conoce la propuesta <span aria-hidden="true">↓</span></a>
+    </div>
+  </section>
+
+  <section class="section section-intro" id="nosotros" aria-labelledby="about-title">
+    <div class="wrap intro-grid">
+      <div class="section-heading">
+        <p class="eyebrow">01 · La propuesta</p>
+        <h2 id="about-title">Distintas áreas, una atención coordinada.</h2>
+      </div>
+      <div class="intro-copy">
+        <p class="intro-lede">Q.A.A. plantea un centro multidisciplinario que ordena el acceso a servicios psicológicos, legales y nutricionales.</p>
+        <p>La propuesta recorre desde la solicitud inicial hasta la orientación, la asignación profesional y el seguimiento. La pertinencia de cada servicio y modalidad debe valorarse según las necesidades de la persona.</p>
+        <div class="mission-vision">
+          <article>
+            <h3>Misión</h3>
+            <p>Brindar atención integral, ética y centrada en las necesidades de cada persona.</p>
+          </article>
+          <article>
+            <h3>Visión</h3>
+            <p>Ser una propuesta multidisciplinaria reconocida en Ica por su responsabilidad y confidencialidad.</p>
+          </article>
+        </div>
+      </div>
+    </div>
+    <div class="wrap values-row" aria-label="Valores institucionales">
+      <span>Ética profesional</span><span>Confidencialidad</span><span>Respeto</span><span>Empatía</span><span>Responsabilidad</span><span>Trabajo interdisciplinario</span>
+    </div>
+  </section>
+
+  <section class="section section-services" id="servicios" aria-labelledby="services-title">
+    <div class="wrap">
+      <div class="section-heading section-heading-wide">
+        <p class="eyebrow">02 · Áreas de atención</p>
+        <h2 id="services-title">Orientación según cada especialidad.</h2>
+        <p>Los servicios descritos son parte de la propuesta académica y se realizarían dentro de las competencias de cada profesional.</p>
+      </div>
+      <div class="services-list">
+        <article class="service-item">
+          <span class="service-number">01</span>
+          <div><h3>Psicología clínica</h3><p>Evaluación, orientación y acompañamiento psicológico según las necesidades de cada persona.</p></div>
+          <a href="#cita" aria-label="Solicitar una cita de Psicología clínica">Solicitar <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="service-item">
+          <span class="service-number">02</span>
+          <div><h3>Psicología forense</h3><p>Evaluaciones psicológicas vinculadas al ámbito judicial, dentro de las competencias profesionales.</p></div>
+          <a href="#cita" aria-label="Solicitar una cita de Psicología forense">Solicitar <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="service-item">
+          <span class="service-number">03</span>
+          <div><h3>Psicología organizacional</h3><p>Orientación sobre bienestar y comportamiento en contextos laborales e institucionales.</p></div>
+          <a href="#cita" aria-label="Solicitar una cita de Psicología organizacional">Solicitar <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="service-item">
+          <span class="service-number">04</span>
+          <div><h3>Asesoría legal</h3><p>Orientación jurídica y explicación de alternativas según las competencias del profesional.</p></div>
+          <a href="#cita" aria-label="Solicitar una cita de Asesoría legal">Solicitar <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="service-item">
+          <span class="service-number">05</span>
+          <div><h3>Orientación nutricional</h3><p>Acompañamiento sobre hábitos alimenticios y bienestar nutricional.</p></div>
+          <a href="#cita" aria-label="Solicitar una cita de Orientación nutricional">Solicitar <span aria-hidden="true">↗</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-team" id="equipo" aria-labelledby="team-title">
+    <div class="wrap team-grid">
+      <div class="section-heading">
+        <p class="eyebrow">03 · Equipo demostrativo</p>
+        <h2 id="team-title">Perfiles para explicar cómo se organiza la propuesta.</h2>
+        <p>Los nombres y perfiles son ficticios. No representan profesionales reales ni acreditan formación o habilitación.</p>
+      </div>
+      <div class="team-list">
+        <article class="team-item"><span>01</span><div><h3>Valeria Cárdenas</h3><p>Psicología clínica · Perfil ficticio</p></div></article>
+        <article class="team-item"><span>02</span><div><h3>Mateo Salvatierra</h3><p>Psicología forense · Perfil ficticio</p></div></article>
+        <article class="team-item"><span>03</span><div><h3>Inés Valdivia</h3><p>Psicología organizacional · Perfil ficticio</p></div></article>
+        <article class="team-item"><span>04</span><div><h3>Gabriel Lazo</h3><p>Asesoría legal · Perfil ficticio</p></div></article>
+        <article class="team-item"><span>05</span><div><h3>Camila Paredes</h3><p>Orientación nutricional · Perfil ficticio</p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-modalities" id="modalidades" aria-labelledby="modalities-title">
+    <div class="wrap">
+      <div class="section-heading section-heading-wide">
+        <p class="eyebrow">04 · Modalidades</p>
+        <h2 id="modalities-title">La modalidad depende del servicio y de cada situación.</h2>
+      </div>
+      <div class="modality-grid">
+        <article class="modality-card"><span>01</span><h3>Presencial</h3><p>En un mismo espacio físico, cuando el servicio o la evaluación requiere presencia.</p></article>
+        <article class="modality-card"><span>02</span><h3>Virtual</h3><p>A distancia, si existen privacidad, conexión y condiciones adecuadas para la atención.</p></article>
+        <article class="modality-card"><span>03</span><h3>Híbrida</h3><p>Combina sesiones presenciales y virtuales según la etapa y las necesidades del proceso.</p></article>
+      </div>
+      <p class="modality-note"><span aria-hidden="true">i</span> La atención virtual no es apropiada para todos los casos. Emergencias o situaciones que requieren intervención presencial deben orientarse a los servicios correspondientes.</p>
+    </div>
+  </section>
+
+  <section class="section section-process" id="proceso" aria-labelledby="process-title">
+    <div class="wrap process-grid">
+      <div class="section-heading process-heading">
+        <p class="eyebrow">05 · Proceso de atención</p>
+        <h2 id="process-title">Nueve etapas desde el primer contacto.</h2>
+        <p>Un recorrido propuesto para organizar la atención y facilitar orientación o derivación cuando corresponda.</p>
+      </div>
+      <ol class="process-list">
+        <li><span>01</span><div><h3>Recepción y registro inicial</h3><p>Se recibe la solicitud y los datos mínimos de contacto.</p></div></li>
+        <li><span>02</span><div><h3>Clasificación de la solicitud</h3><p>Se identifica el área solicitada para orientar el siguiente paso.</p></div></li>
+        <li><span>03</span><div><h3>Evaluación de pertinencia</h3><p>Se valora si el servicio y la modalidad son adecuados.</p></div></li>
+        <li><span>04</span><div><h3>Asignación del profesional</h3><p>Se propone un especialista según el servicio y la disponibilidad.</p></div></li>
+        <li><span>05</span><div><h3>Consentimiento informado</h3><p>Se explican alcances, condiciones, beneficios, riesgos y límites.</p></div></li>
+        <li><span>06</span><div><h3>Ejecución de la atención</h3><p>El servicio se desarrolla con criterios éticos y técnicos.</p></div></li>
+        <li><span>07</span><div><h3>Seguimiento o derivación</h3><p>Se coordina continuidad o derivación cuando se requiere.</p></div></li>
+        <li><span>08</span><div><h3>Cierre de la atención</h3><p>Se concluye el proceso según sus objetivos y condiciones.</p></div></li>
+        <li><span>09</span><div><h3>Encuesta de satisfacción</h3><p>Se recogen opiniones para revisar la experiencia y mejorar la propuesta.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section section-ethics" id="etica" aria-labelledby="ethics-title">
+    <div class="wrap ethics-grid">
+      <div class="section-heading">
+        <p class="eyebrow">06 · Ética y confidencialidad</p>
+        <h2 id="ethics-title">La privacidad guía cada etapa.</h2>
+      </div>
+      <div class="ethics-copy">
+        <p>La propuesta contempla consentimiento informado, protección de datos y acceso limitado a la información personal. El sistema de demostración no almacenará historias clínicas, diagnósticos ni evaluaciones.</p>
+        <p>El envío de una solicitud no equivale a una cita confirmada. La confirmación dependería de revisión administrativa y de la pertinencia profesional.</p>
+        <div class="survey-note"><span class="survey-label">Mejora continua</span><p>La encuesta se presenta como parte del proceso institucional. En esta etapa no se recopilan respuestas digitales.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-organization" id="organizacion" aria-labelledby="organization-title">
+    <div class="wrap">
+      <div class="section-heading section-heading-wide">
+        <p class="eyebrow">07 · Organización funcional</p>
+        <h2 id="organization-title">Responsabilidades que se coordinan.</h2>
+      </div>
+      <div class="org-root"><span>Dirección general</span><span class="org-line" aria-hidden="true"></span></div>
+      <ul class="org-grid">
+        <li><h3>Coordinación administrativa</h3><p>Recursos, agenda y procesos administrativos.</p></li>
+        <li><h3>Atención y servicios</h3><p>Recepción de solicitudes y coordinación de citas.</p></li>
+        <li><h3>Áreas profesionales</h3><p>Psicología, asesoría legal y nutrición.</p></li>
+        <li><h3>Soporte tecnológico</h3><p>Plataformas, accesos y apoyo a la seguridad digital.</p></li>
+      </ul>
+      <p class="org-note">Organigrama propuesto para fines académicos. El panel administrativo de la aplicación tendrá un único rol: administrador general.</p>
+    </div>
+  </section>
+
+  <section class="section section-visit" id="visita" aria-labelledby="visit-title">
+    <div class="wrap visit-grid">
+      <div class="section-heading">
+        <p class="eyebrow">08 · Ubicación propuesta</p>
+        <h2 id="visit-title">Ica, Perú</h2>
+      </div>
+      <div class="visit-copy">
+        <p class="visit-address">Calle Callao N.º 162<br>Cercado de Ica</p>
+        <p>Dirección referencial para el proyecto académico. No corresponde a una sede comercial actualmente operativa.</p>
+      </div>
+      <div class="visit-number" aria-hidden="true">ICA<br><span>PE</span></div>
+    </div>
+  </section>
+
+  <section class="section section-booking" id="cita" aria-labelledby="booking-title">
+    <div class="wrap booking-grid">
+      <div class="section-heading booking-heading">
+        <p class="eyebrow">09 · Solicitud de cita</p>
+        <h2 id="booking-title">Cuéntanos qué área buscas.</h2>
+        <p>Esta maqueta permite recorrer el formulario. Todavía no registra datos ni consulta horarios reales.</p>
+        <p class="booking-status">Usa datos ficticios para probar. La maqueta no transmite ni guarda la información.</p>
+      </div>
+      <div class="booking-panel">
+        <form id="booking-form">
+          <div class="form-row">
+            <label for="specialty">Especialidad</label>
+            <select id="specialty" name="specialty" required>
+              <option value="">Selecciona un área</option>
+              <option value="clinical">Psicología clínica</option>
+              <option value="forensic">Psicología forense</option>
+              <option value="organizational">Psicología organizacional</option>
+              <option value="legal">Asesoría legal</option>
+              <option value="nutrition">Orientación nutricional</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="modality">Modalidad preferida</label>
+            <select id="modality" name="modality" required>
+              <option value="">Selecciona una modalidad</option>
+              <option value="presencial">Presencial</option>
+              <option value="virtual">Virtual</option>
+              <option value="hibrida">Híbrida</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="professional">Profesional demostrativo</label>
+            <select id="professional" name="professional" required disabled>
+              <option value="">Primero selecciona una especialidad</option>
+              <option value="clinical" data-specialty="clinical">Valeria Cárdenas · Psicología clínica</option>
+              <option value="forensic" data-specialty="forensic">Mateo Salvatierra · Psicología forense</option>
+              <option value="organizational" data-specialty="organizational">Inés Valdivia · Psicología organizacional</option>
+              <option value="legal" data-specialty="legal">Gabriel Lazo · Asesoría legal</option>
+              <option value="nutrition" data-specialty="nutrition">Camila Paredes · Orientación nutricional</option>
+            </select>
+          </div>
+          <div class="form-pair">
+            <div class="form-row">
+              <label for="date">Fecha de preferencia</label>
+              <input id="date" name="date" type="date" required>
+            </div>
+            <div class="form-row">
+              <label for="time">Horario de ejemplo</label>
+              <select id="time" name="time" required>
+                <option value="">Elige una hora</option>
+                <option value="10:00">10:00</option>
+                <option value="11:30">11:30</option>
+                <option value="15:00">15:00</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <label for="name">Nombre</label>
+            <input id="name" name="name" type="text" autocomplete="name" required>
+          </div>
+          <div class="form-pair">
+            <div class="form-row">
+              <label for="email">Correo electrónico</label>
+              <input id="email" name="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="form-row">
+              <label for="phone">Teléfono (opcional)</label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel">
+            </div>
+          </div>
+          <label class="consent-row" for="consent">
+            <input id="consent" name="consent" type="checkbox" required>
+            <span>Confirmo que los datos ingresados son ficticios.</span>
+          </label>
+          <button class="button form-button" id="demo-submit" type="button">Revisar solicitud de demostración <span aria-hidden="true">↗</span></button>
+          <p class="form-help">No incluyas motivos de consulta, diagnósticos ni otra información sensible.</p>
+          <p class="form-result" id="form-result" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing section" aria-labelledby="closing-title">
+    <div class="wrap closing-inner">
+      <p class="eyebrow">Q.A.A. · Ica</p>
+      <h2 id="closing-title">Tu bienestar, nuestra prioridad.</h2>
+      <a class="button button-light" href="#cita">Solicitar una cita <span aria-hidden="true">↗</span></a>
+    </div>
+  </section>
+{% endblock %}

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es-PE" data-type="service">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f1e9">
+    <meta name="page-type" content="service">
+    <meta name="site-kind" content="other">
+    <meta name="description" content="Propuesta académica de consultoría integral psicológica, legal y nutricional en Ica.">
+    <title>{% block title %}Q.A.A. — Consultoría Integral{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="brand" href="#inicio" aria-label="Q.A.A., ir al inicio">
+          <span class="brand-name">Q.A.A.</span>
+          <span class="brand-description">Consultoría integral</span>
+        </a>
+
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+          <span class="menu-toggle-label">Menú</span>
+          <span class="menu-toggle-mark" aria-hidden="true"></span>
+        </button>
+
+        <nav class="site-nav" id="site-nav" aria-label="Navegación principal">
+          <a href="#nosotros">Nosotros</a>
+          <a href="#servicios">Servicios</a>
+          <a href="#equipo">Equipo</a>
+          <a href="#proceso">Proceso</a>
+          <a class="button button-small" href="#cita">Solicitar una cita</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="contenido">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer" id="cierre">
+      <div class="wrap footer-main">
+        <div>
+          <a class="footer-brand" href="#inicio">Q.A.A.</a>
+          <p>Evaluación, Acompañamiento y Asesoría.</p>
+        </div>
+        <a class="footer-top" href="#inicio">Volver al inicio <span aria-hidden="true">↑</span></a>
+      </div>
+      <div class="wrap footer-meta">
+        <p>Propuesta académica. No representa un centro actualmente operativo.</p>
+        <p class="photo-credit">Fotografía referencial: <a href="https://unsplash.com/photos/DEdM9Vs6s8w" rel="noreferrer">Breather / Unsplash</a>.</p>
+      </div>
+    </footer>
+  </body>
+</html>
