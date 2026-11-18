@@ -7,6 +7,7 @@ load_dotenv()
 
 from .config import Config
 from .extensions import db, migrate
+from . import models as _models  # Registra todas las tablas en db.metadata.
 
 
 def create_app(test_config: dict | None = None) -> Flask:

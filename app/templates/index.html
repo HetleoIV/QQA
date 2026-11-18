@@ -89,16 +89,13 @@
   <section class="section section-team" id="equipo" aria-labelledby="team-title">
     <div class="wrap team-grid">
       <div class="section-heading">
-        <p class="eyebrow">03 · Equipo demostrativo</p>
-        <h2 id="team-title">Perfiles para explicar cómo se organiza la propuesta.</h2>
-        <p>Los nombres y perfiles son ficticios. No representan profesionales reales ni acreditan formación o habilitación.</p>
+        <p class="eyebrow">03 · Equipo del proyecto</p>
+        <h2 id="team-title">Integrantes de Q.A.A.</h2>
       </div>
       <div class="team-list">
-        <article class="team-item"><span>01</span><div><h3>Valeria Cárdenas</h3><p>Psicología clínica · Perfil ficticio</p></div></article>
-        <article class="team-item"><span>02</span><div><h3>Mateo Salvatierra</h3><p>Psicología forense · Perfil ficticio</p></div></article>
-        <article class="team-item"><span>03</span><div><h3>Inés Valdivia</h3><p>Psicología organizacional · Perfil ficticio</p></div></article>
-        <article class="team-item"><span>04</span><div><h3>Gabriel Lazo</h3><p>Asesoría legal · Perfil ficticio</p></div></article>
-        <article class="team-item"><span>05</span><div><h3>Camila Paredes</h3><p>Orientación nutricional · Perfil ficticio</p></div></article>
+        <article class="team-item"><span>01</span><div><h3>Apolaya Paucar, Jaime Martín</h3><p>Psicólogo - Perfil</p></div></article>
+        <article class="team-item"><span>02</span><div><h3>Huarcaya Sifuentes, Kevin Albert</h3><p>Psicólogo - Perfil</p></div></article>
+        <article class="team-item"><span>03</span><div><h3>Quelca Apari, Cesar Anderson</h3><p>Psicólogo - Perfil</p></div></article>
       </div>
     </div>
   </section>
@@ -107,12 +104,10 @@
     <div class="wrap">
       <div class="section-heading section-heading-wide">
         <p class="eyebrow">04 · Modalidades</p>
-        <h2 id="modalities-title">La modalidad depende del servicio y de cada situación.</h2>
+        <h2 id="modalities-title">Atención virtual, según la pertinencia de cada servicio.</h2>
       </div>
       <div class="modality-grid">
-        <article class="modality-card"><span>01</span><h3>Presencial</h3><p>En un mismo espacio físico, cuando el servicio o la evaluación requiere presencia.</p></article>
         <article class="modality-card"><span>02</span><h3>Virtual</h3><p>A distancia, si existen privacidad, conexión y condiciones adecuadas para la atención.</p></article>
-        <article class="modality-card"><span>03</span><h3>Híbrida</h3><p>Combina sesiones presenciales y virtuales según la etapa y las necesidades del proceso.</p></article>
       </div>
       <p class="modality-note"><span aria-hidden="true">i</span> La atención virtual no es apropiada para todos los casos. Emergencias o situaciones que requieren intervención presencial deben orientarse a los servicios correspondientes.</p>
     </div>
@@ -188,41 +183,27 @@
     <div class="wrap booking-grid">
       <div class="section-heading booking-heading">
         <p class="eyebrow">09 · Solicitud de cita</p>
-        <h2 id="booking-title">Cuéntanos qué área buscas.</h2>
+        <h2 id="booking-title">Cuéntanos qué servicio buscas.</h2>
         <p>Esta maqueta permite recorrer el formulario. Todavía no registra datos ni consulta horarios reales.</p>
         <p class="booking-status">Usa datos ficticios para probar. La maqueta no transmite ni guarda la información.</p>
       </div>
       <div class="booking-panel">
         <form id="booking-form">
           <div class="form-row">
-            <label for="specialty">Especialidad</label>
-            <select id="specialty" name="specialty" required>
+            <label for="service">Servicio</label>
+            <select id="service" name="service" required>
               <option value="">Selecciona un área</option>
-              <option value="clinical">Psicología clínica</option>
-              <option value="forensic">Psicología forense</option>
-              <option value="organizational">Psicología organizacional</option>
-              <option value="legal">Asesoría legal</option>
-              <option value="nutrition">Orientación nutricional</option>
+              <option value="psicologia-clinica">Psicología clínica</option>
+              <option value="psicologia-forense">Psicología forense</option>
+              <option value="psicologia-organizacional">Psicología organizacional</option>
+              <option value="asesoria-legal">Asesoría legal</option>
+              <option value="orientacion-nutricional">Orientación nutricional</option>
             </select>
           </div>
           <div class="form-row">
-            <label for="modality">Modalidad preferida</label>
+            <label for="modality">Modalidad de atención</label>
             <select id="modality" name="modality" required>
-              <option value="">Selecciona una modalidad</option>
-              <option value="presencial">Presencial</option>
-              <option value="virtual">Virtual</option>
-              <option value="hibrida">Híbrida</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <label for="professional">Profesional demostrativo</label>
-            <select id="professional" name="professional" required disabled>
-              <option value="">Primero selecciona una especialidad</option>
-              <option value="clinical" data-specialty="clinical">Valeria Cárdenas · Psicología clínica</option>
-              <option value="forensic" data-specialty="forensic">Mateo Salvatierra · Psicología forense</option>
-              <option value="organizational" data-specialty="organizational">Inés Valdivia · Psicología organizacional</option>
-              <option value="legal" data-specialty="legal">Gabriel Lazo · Asesoría legal</option>
-              <option value="nutrition" data-specialty="nutrition">Camila Paredes · Orientación nutricional</option>
+              <option value="virtual" selected>Virtual</option>
             </select>
           </div>
           <div class="form-pair">

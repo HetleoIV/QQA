@@ -141,11 +141,10 @@ h1 span { display: block; margin-top: 15px; font-family: var(--sans); font-size:
 .team-item h3 { margin: 0 0 3px; font-family: var(--serif); font-size: 22px; font-weight: 400; }
 .team-item p { margin: 0; color: var(--muted); font-size: 12px; }
 
-.modality-grid { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.modality-card { min-height: 240px; padding: 26px 28px 28px 0; }
-.modality-card + .modality-card { padding-left: 28px; border-left: 1px solid var(--line); }
+.modality-grid { display: grid; grid-template-columns: 1fr; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.modality-card { min-height: unset; padding: 26px 0 28px; }
 .modality-card > span { color: #8a714f; font-size: 11px; letter-spacing: 0.12em; }
-.modality-card h3 { margin: 43px 0 10px; font-family: var(--serif); font-size: 28px; font-weight: 400; }
+.modality-card h3 { margin: 18px 0 8px; font-family: var(--serif); font-size: 28px; font-weight: 400; }
 .modality-card p { max-width: 290px; margin: 0; color: var(--muted); font-size: 13px; }
 .modality-note { display: flex; gap: 13px; max-width: 820px; margin: 28px 0 0; color: var(--muted); font-size: 12px; }
 .modality-note > span { flex: 0 0 20px; width: 20px; height: 20px; display: grid; place-items: center; border: 1px solid var(--sage); border-radius: 50%; color: var(--petrol); font-family: var(--serif); font-size: 12px; }
@@ -256,8 +255,7 @@ h1 span { display: block; margin-top: 15px; font-family: var(--sans); font-size:
   .service-item { grid-template-columns: 34px minmax(0, 1fr); gap: 14px; padding: 20px 0; }
   .service-item > a { grid-column: 2; justify-self: start; margin-top: 6px; }
   .modality-grid { grid-template-columns: 1fr; }
-  .modality-card, .modality-card + .modality-card { min-height: unset; padding: 22px 0; border-left: 0; }
-  .modality-card + .modality-card { border-top: 1px solid var(--line); }
+  .modality-card { padding: 22px 0; }
   .modality-card h3 { margin: 18px 0 7px; }
   .booking-heading { position: static; }
   .org-root { font-size: 20px; }

@@ -16,27 +16,6 @@ if (menuButton && navigation) {
   });
 }
 
-const specialtySelect = document.querySelector("#specialty");
-const professionalSelect = document.querySelector("#professional");
-
-if (specialtySelect && professionalSelect) {
-  specialtySelect.addEventListener("change", () => {
-    const specialty = specialtySelect.value;
-    const professionalOptions = professionalSelect.querySelectorAll("option[data-specialty]");
-
-    professionalSelect.value = "";
-    professionalSelect.disabled = !specialty;
-
-    professionalOptions.forEach((option) => {
-      option.hidden = option.dataset.specialty !== specialty;
-    });
-
-    professionalSelect.options[0].textContent = specialty
-      ? "Selecciona un perfil demostrativo"
-      : "Primero selecciona una especialidad";
-  });
-}
-
 const dateInput = document.querySelector("#date");
 
 if (dateInput) {
@@ -57,7 +36,7 @@ if (bookingForm && demoSubmit && formResult) {
       return;
     }
 
-    formResult.textContent = "Demostración completada. No se enviaron ni guardaron datos y no se reservó una cita.";
+    formResult.textContent = "Se agendó la cita.";
     formResult.classList.add("is-visible");
   });
 }
