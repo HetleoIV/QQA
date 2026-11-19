@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Acceso administrativo · Q.A.A.{% endblock %}
+
+{% block content %}
+  <section class="section admin-auth-section" aria-labelledby="admin-login-title">
+    <div class="wrap admin-auth-wrap">
+      <p class="eyebrow">Q.A.A. · Administración</p>
+      <h1 id="admin-login-title">Acceso administrativo</h1>
+      <p class="admin-auth-intro">Ingresa con la cuenta administrativa autorizada.</p>
+
+      <div class="admin-auth-panel">
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+          <p class="admin-auth-message admin-auth-message-{{ category }}" role="alert">{{ message }}</p>
+        {% endfor %}
+
+        <form class="admin-auth-form" method="post" action="{{ url_for('admin.login') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+          <div class="form-row">
+            <label for="admin-email">Correo electrónico</label>
+            <input
+              id="admin-email"
+              name="email"
+              type="email"
+              autocomplete="username"
+              maxlength="254"
+              required
+            >
+          </div>
+
+          <div class="form-row">
+            <label for="admin-password">Contraseña</label>
+            <input
+              id="admin-password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+            >
+            <button class="password-toggle" id="password-toggle" type="button" aria-controls="admin-password" aria-pressed="false">Mostrar contraseña</button>
+          </div>
+
+          <button class="button form-button" type="submit">Iniciar sesión</button>
+        </form>
+      </div>
+    </div>
+  </section>
+{% endblock %}

@@ -50,5 +50,16 @@ def test_formulario_no_envia_ni_persiste_solicitudes():
     script = client.get("/static/js/main.js").get_data(as_text=True)
 
     assert 'id="demo-submit" type="button"' in page
-    assert "No se enviaron ni guardaron datos" in script
+    assert "Se agendó la cita." in script
     assert client.post("/").status_code == 405
+
+
+def test_acceso_administrativo_esta_en_el_pie_fuera_de_la_navegacion():
+    app = create_app({"TESTING": True})
+    client = app.test_client()
+
+    homepage = client.get("/").get_data(as_text=True)
+    assert 'href="/admin/login"' in homepage
+    assert "Acceso administrativo" in homepage
+    navigation = homepage.split('<nav class="site-nav"', 1)[1].split("</nav>", 1)[0]
+    assert "Acceso administrativo" not in navigation

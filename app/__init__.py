@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -23,8 +24,19 @@ def create_app(test_config: dict | None = None) -> Flask:
     db.init_app(app)
     migrate.init_app(app, db)
 
+    from .admin import admin_bp
     from .public import public_bp
 
     app.register_blueprint(public_bp)
+    app.register_blueprint(admin_bp)
+
+    if os.environ.get("DATABASE_DIAGNOSTIC_TOKEN"):
+        from .database_diagnostics import database_diagnostics_bp
+
+        app.register_blueprint(database_diagnostics_bp)
+
+    from .seed_data import register_seed_commands
+
+    register_seed_commands(app)
 
     return app

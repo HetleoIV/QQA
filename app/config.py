@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from sqlalchemy.engine import make_url
 
@@ -20,4 +21,8 @@ class Config:
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = os.getenv("FLASK_DEBUG", "false").lower() in {"1", "true", "yes"}
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
+    SESSION_COOKIE_SECURE = not DEBUG
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
     PENDING_HOLD_MINUTES = int(os.getenv("PENDING_HOLD_MINUTES", "15"))

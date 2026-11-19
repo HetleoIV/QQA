@@ -201,6 +201,18 @@ h1 span { display: block; margin-top: 15px; font-family: var(--sans); font-size:
 .form-result { display: none; margin: 16px 0 0; padding: 13px; border-left: 3px solid var(--petrol); background: var(--sage-light); color: var(--petrol); font-size: 12px; }
 .form-result.is-visible { display: block; }
 
+.admin-auth-section { min-height: 62vh; background: var(--sage-light); }
+.admin-auth-wrap { max-width: 580px; }
+.admin-auth-wrap h1 { margin-bottom: 12px; font-size: clamp(40px, 5vw, 58px); }
+.admin-auth-intro { margin-bottom: 28px; color: var(--muted); }
+.admin-auth-panel, .admin-dashboard-panel { padding: clamp(24px, 5vw, 42px); background: var(--paper); }
+.admin-auth-panel { margin-top: 26px; }
+.admin-auth-message { margin: 0 0 20px; padding: 12px 14px; border-left: 3px solid #8a714f; background: var(--ivory); color: var(--petrol); font-size: 13px; }
+.admin-auth-message-success { border-left-color: #557457; }
+.password-toggle { justify-self: start; padding: 3px 0; border: 0; background: transparent; color: var(--petrol-soft); font-size: 12px; text-decoration: underline; cursor: pointer; }
+.admin-dashboard-panel { max-width: 720px; margin-inline: auto; }
+.admin-dashboard-panel > p:not(.eyebrow) { margin: 0 0 24px; color: var(--muted); }
+
 .closing { padding-block: clamp(78px, 10vw, 130px); background: var(--petrol); color: var(--ivory); text-align: center; }
 .closing-inner { display: grid; justify-items: center; }
 .closing .eyebrow { color: var(--sage); }

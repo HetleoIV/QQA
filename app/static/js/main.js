@@ -40,3 +40,17 @@ if (bookingForm && demoSubmit && formResult) {
     formResult.classList.add("is-visible");
   });
 }
+
+const adminPassword = document.querySelector("#admin-password");
+const passwordToggle = document.querySelector("#password-toggle");
+
+if (adminPassword && passwordToggle) {
+  passwordToggle.addEventListener("click", () => {
+    const showPassword = adminPassword.type === "password";
+    adminPassword.type = showPassword ? "text" : "password";
+    passwordToggle.setAttribute("aria-pressed", String(showPassword));
+    passwordToggle.textContent = showPassword
+      ? "Ocultar contraseña"
+      : "Mostrar contraseña";
+  });
+}
