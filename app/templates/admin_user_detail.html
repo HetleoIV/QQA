@@ -1,0 +1,18 @@
+{% extends "admin_base.html" %}
+{% block title %}Detalle de usuario · Q.A.A.{% endblock %}
+{% block admin_content %}
+  <section class="admin-users-page" aria-labelledby="user-detail-title">
+    <p class="admin-dashboard-eyebrow"><a class="admin-users-text-link" href="{{ url_for('admin.users') }}">Usuarios</a> / Detalle</p>
+    <header class="admin-users-header"><div><h1 id="user-detail-title">Cuenta administrativa</h1><p class="admin-dashboard-subtitle">Consulta y administra el acceso de esta cuenta.</p></div><a class="admin-users-cancel" href="{{ url_for('admin.users') }}">Volver al listado</a></header>
+    <article class="admin-users-panel admin-users-detail-card">
+      <dl><div><dt>Correo electrónico</dt><dd>{{ administrator.email }}</dd></div><div><dt>Estado</dt><dd><span class="admin-users-state{% if not administrator.is_active %} is-inactive{% endif %}">{{ 'Activa' if administrator.is_active else 'Inactiva' }}</span></dd></div><div><dt>Creada</dt><dd><time datetime="{{ administrator.created_at.isoformat() }}">{{ administrator.created_at.strftime('%d/%m/%Y %H:%M') }}</time></dd></div><div><dt>Auditoría</dt><dd>{{ 'Con cambios de estado atribuidos' if has_history else 'Sin cambios atribuidos' }}</dd></div></dl>
+      <div class="admin-users-actions">
+        {% if administrator.is_active %}<form method="post" action="{{ url_for('admin.deactivate_user', administrator_id=administrator.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="admin-users-button admin-users-button-secondary" type="submit"{% if is_current or active_count <= 1 %} disabled{% endif %}>Desactivar</button></form>
+        {% else %}<form method="post" action="{{ url_for('admin.activate_user', administrator_id=administrator.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="admin-users-button" type="submit">Activar</button></form>{% endif %}
+        {% if not is_current and not has_history and (not administrator.is_active or active_count > 1) %}<a class="admin-users-danger-link" href="{{ url_for('admin.confirm_delete_user', administrator_id=administrator.id) }}">Eliminar permanentemente</a>{% endif %}
+      </div>
+      {% if has_history %}<p class="admin-users-note">Esta cuenta tiene historial de auditoría y no puede eliminarse. Puedes desactivarla para conservar la atribución.</p>{% endif %}
+      {% if is_current %}<p class="admin-users-note">No puedes desactivar ni eliminar la cuenta que estás usando.</p>{% elif administrator.is_active and active_count <= 1 %}<p class="admin-users-note">Esta es la última cuenta activa; debe permanecer activa.</p>{% endif %}
+    </article>
+  </section>
+{% endblock %}

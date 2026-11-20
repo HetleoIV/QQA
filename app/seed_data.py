@@ -9,6 +9,10 @@ from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from werkzeug.security import generate_password_hash
 
+from .admin_account_lock import (
+    POSTGRESQL_ADMIN_MUTATIONS_LOCK_ID,
+    lock_postgresql_admin_mutations,
+)
 from .extensions import db
 from .models import Administrator, AvailabilitySlot, Professional, Service
 
@@ -30,7 +34,7 @@ DEMO_PROFESSIONALS = (
 DEMO_DATES = (date(2027, 1, 4), date(2027, 1, 5), date(2027, 1, 6))
 DEMO_START_TIMES = (time(9, 0), time(10, 0))
 DEMO_TIMEZONE = ZoneInfo("America/Lima")
-POSTGRESQL_ADMIN_CREATION_LOCK_ID = 0x514141
+POSTGRESQL_ADMIN_CREATION_LOCK_ID = POSTGRESQL_ADMIN_MUTATIONS_LOCK_ID
 
 
 def _require_sqlite() -> None:
@@ -75,10 +79,7 @@ def _require_postgresql() -> None:
 
 def _lock_postgresql_admin_creation() -> None:
     """Serializa las ejecuciones del comando dentro de una transacción."""
-    db.session.execute(
-        text("SELECT pg_advisory_xact_lock(:lock_id)"),
-        {"lock_id": POSTGRESQL_ADMIN_CREATION_LOCK_ID},
-    )
+    lock_postgresql_admin_mutations(db.session)
 
 
 @click.command("seed-initial-data")

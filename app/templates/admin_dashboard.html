@@ -1,22 +1,93 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
 
-{% block title %}Panel administrativo · Q.A.A.{% endblock %}
+{% block title %}Resumen administrativo · Q.A.A.{% endblock %}
 
-{% block content %}
-  <section class="section admin-auth-section" aria-labelledby="admin-dashboard-title">
-    <div class="wrap admin-dashboard-panel">
-      <p class="eyebrow">Q.A.A. · Administración</p>
-      <h1 id="admin-dashboard-title">Panel administrativo</h1>
-      <p>La sesión está iniciada. Las herramientas administrativas se incorporarán en una fase posterior.</p>
+{% block admin_content %}
+  <div class="admin-dashboard-content">
+    <header class="admin-dashboard-page-header">
+      <div>
+        <p class="admin-dashboard-eyebrow">Panel administrativo</p>
+        <h1>Bienvenido al resumen</h1>
+        <p class="admin-dashboard-subtitle">Estado general de la atención en Q.A.A.</p>
+      </div>
+      <div class="admin-dashboard-header-meta">
+        <span class="admin-dashboard-preview-badge">Vista previa - Datos de demostración</span>
+        <time class="admin-dashboard-current-date" datetime="{{ current_date_iso }}">{{ current_date_label }}</time>
+      </div>
+    </header>
 
-      {% for category, message in get_flashed_messages(with_categories=true) %}
-        <p class="admin-auth-message admin-auth-message-{{ category }}" role="status">{{ message }}</p>
+    <section class="admin-dashboard-stats" aria-label="Indicadores de demostración">
+      {% for metric in metrics %}
+        <article class="admin-dashboard-stat-card">
+          <div class="admin-dashboard-stat-topline">
+            <span class="admin-dashboard-stat-label">{{ metric.label }}</span>
+            <span class="admin-dashboard-stat-icon" aria-hidden="true">
+              {% if metric.icon == "calendar" %}
+                <svg class="admin-dashboard-icon" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M7.5 3.5v3M16.5 3.5v3M3.5 9.5h17"/></svg>
+              {% elif metric.icon == "pending" %}
+                <svg class="admin-dashboard-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
+              {% elif metric.icon == "confirmed" %}
+                <svg class="admin-dashboard-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="m8 12 2.6 2.6L16.5 9"/></svg>
+              {% else %}
+                <svg class="admin-dashboard-icon" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 20c.5-3.3 2.7-5 6.2-5s5.7 1.7 6.2 5M16 5.2a3.5 3.5 0 0 1 0 6.6M17 15c2.3.5 3.7 2.1 4.2 5"/></svg>
+              {% endif %}
+            </span>
+          </div>
+          <strong class="admin-dashboard-stat-value">{{ metric.value }}</strong>
+          <span class="admin-dashboard-stat-note">{{ metric.note }}</span>
+        </article>
       {% endfor %}
+    </section>
 
-      <form method="post" action="{{ url_for('admin.logout') }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <button class="button" type="submit">Cerrar sesión</button>
-      </form>
+    <div class="admin-dashboard-panels">
+      <section class="admin-dashboard-panel admin-dashboard-appointments" aria-labelledby="upcoming-title">
+        <div class="admin-dashboard-panel-heading">
+          <div>
+            <p class="admin-dashboard-eyebrow">Agenda</p>
+            <h2 id="upcoming-title">Próximas citas</h2>
+          </div>
+          <span class="admin-dashboard-panel-count">{{ upcoming_appointments|length }} ejemplos</span>
+        </div>
+
+        <ul class="admin-dashboard-appointment-list">
+          {% for appointment in upcoming_appointments %}
+            <li class="admin-dashboard-appointment-row">
+              <div class="admin-dashboard-appointment-date" aria-label="{{ appointment.date_label }} a las {{ appointment.time }}">
+                <strong>{{ appointment.day }}</strong>
+                <span>{{ appointment.month }}</span>
+              </div>
+              <div class="admin-dashboard-appointment-info">
+                <strong>{{ appointment.reference }}</strong>
+                <span>{{ appointment.service }}</span>
+              </div>
+              <span class="admin-dashboard-status-pill admin-dashboard-status-{{ appointment.status_key }}">{{ appointment.status_label }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+        <p class="admin-dashboard-panel-footnote">Registros ficticios; no corresponden a personas atendidas.</p>
+      </section>
+
+      <section class="admin-dashboard-panel admin-dashboard-activity" aria-labelledby="activity-title">
+        <div class="admin-dashboard-panel-heading">
+          <div>
+            <p class="admin-dashboard-eyebrow">Movimientos</p>
+            <h2 id="activity-title">Actividad reciente</h2>
+          </div>
+        </div>
+
+        <ol class="admin-dashboard-activity-list">
+          {% for activity in recent_activity %}
+            <li class="admin-dashboard-activity-item">
+              <span class="admin-dashboard-activity-marker" aria-hidden="true"></span>
+              <div>
+                <strong>{{ activity.title }}</strong>
+                <time>{{ activity.time_label }}</time>
+              </div>
+            </li>
+          {% endfor %}
+        </ol>
+        <p class="admin-dashboard-panel-footnote">Actividad de demostración.</p>
+      </section>
     </div>
-  </section>
+  </div>
 {% endblock %}

@@ -1,0 +1,17 @@
+{% extends "admin_base.html" %}
+{% block title %}Confirmar eliminación · Q.A.A.{% endblock %}
+{% block admin_content %}
+  <section class="admin-users-page" aria-labelledby="delete-title">
+    <p class="admin-dashboard-eyebrow"><a class="admin-users-text-link" href="{{ url_for('admin.users') }}">Usuarios</a> / Eliminar</p>
+    <header class="admin-users-header"><div><h1 id="delete-title">Eliminar cuenta</h1><p class="admin-dashboard-subtitle">Revisa las consecuencias antes de confirmar.</p></div></header>
+    <div class="admin-users-panel admin-users-confirm-card">
+      <p>La cuenta <strong>{{ administrator.email }}</strong> se eliminará permanentemente.</p>
+      {% if has_history %}<p class="admin-users-warning">Esta cuenta tiene registros de auditoría. No se puede eliminar; desactívala para conservar la atribución.</p>
+      {% elif is_current %}<p class="admin-users-warning">No puedes eliminar la cuenta con la que has iniciado sesión.</p>
+      {% elif administrator.is_active and active_count <= 1 %}<p class="admin-users-warning">No puedes eliminar la última cuenta activa.</p>
+      {% else %}<p class="admin-users-warning">Esta acción no se puede deshacer.</p>
+        <form class="admin-users-form" method="post" action="{{ url_for('admin.delete_user', administrator_id=administrator.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><label class="admin-users-confirm-check"><input type="checkbox" name="confirm_delete" value="yes" required> Confirmo que deseo eliminar permanentemente esta cuenta.</label><div class="admin-users-form-actions"><button class="admin-users-button admin-users-button-danger" type="submit">Eliminar cuenta</button><a class="admin-users-cancel" href="{{ url_for('admin.user_detail', administrator_id=administrator.id) }}">Cancelar</a></div></form>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

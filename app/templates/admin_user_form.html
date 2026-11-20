@@ -1,0 +1,15 @@
+{% extends "admin_base.html" %}
+{% block title %}Crear usuario · Q.A.A.{% endblock %}
+{% block admin_content %}
+  <section class="admin-users-page" aria-labelledby="user-form-title">
+    <p class="admin-dashboard-eyebrow"><a class="admin-users-text-link" href="{{ url_for('admin.users') }}">Usuarios</a> / Nueva cuenta</p>
+    <header class="admin-users-header"><div><h1 id="user-form-title">Crear usuario</h1><p class="admin-dashboard-subtitle">Añade una cuenta administrativa para acceder al panel.</p></div></header>
+    <form class="admin-users-form admin-users-panel" method="post" action="{{ url_for('admin.create_user') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+      <label for="email">Correo electrónico</label><input id="email" name="email" type="email" maxlength="254" autocomplete="email" value="{{ email }}" required>
+      <label for="password">Contraseña <span>(mínimo 12 caracteres)</span></label><input id="password" name="password" type="password" minlength="12" autocomplete="new-password" required>
+      <label for="password_confirmation">Confirmar contraseña</label><input id="password_confirmation" name="password_confirmation" type="password" minlength="12" autocomplete="new-password" required>
+      <div class="admin-users-form-actions"><button class="admin-users-button" type="submit">Crear cuenta</button><a class="admin-users-cancel" href="{{ url_for('admin.users') }}">Cancelar</a></div>
+    </form>
+  </section>
+{% endblock %}
