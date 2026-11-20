@@ -195,7 +195,94 @@ def test_slots_orm_solo_acepta_horas_completas_y_sin_solapamiento(app):
             db.session.flush()
 
 
-def test_pendiente_requiere_expiracion_y_hashes_publicos_son_unicos(app):
+def test_solicitud_pendiente_sin_asignacion_no_requiere_expiracion(app):
+    with app.app_context():
+        service = Service(slug="clinica", name="Psicología Clínica", description="Ficticio")
+        request_one = Appointment(
+            service=service,
+            modality="virtual",
+            contact_name="Persona de prueba",
+            contact_email="persona@example.test",
+            public_ticket_hash="e" * 64,
+            status="pending",
+            hold_expires_at=None,
+        )
+        request_two = Appointment(
+            service=service,
+            modality="virtual",
+            contact_name="Otra persona de prueba",
+            contact_email="otra@example.test",
+            public_ticket_hash="f" * 64,
+            status="pending",
+            hold_expires_at=None,
+        )
+        db.session.add_all([service, request_one, request_two])
+        db.session.commit()
+
+        assert request_one.professional is None
+        assert request_one.availability_slot is None
+
+
+def test_asignacion_parcial_es_rechazada(app):
+    with app.app_context():
+        service = Service(slug="clinica", name="Psicología Clínica", description="Ficticio")
+        professional = Professional(full_name="Profesional de prueba", services=[service])
+        start = datetime.now(timezone.utc) + timedelta(days=3)
+        slot = AvailabilitySlot(
+            professional=professional, starts_at=start, ends_at=start + timedelta(hours=1)
+        )
+        db.session.add_all([service, professional, slot])
+        db.session.commit()
+
+        partial_assignment = Appointment(
+            professional_id=professional.id,
+            service_id=service.id,
+            modality="virtual",
+            contact_name="Persona de prueba",
+            contact_email="persona@example.test",
+            public_ticket_hash="e" * 64,
+            status="pending",
+        )
+        db.session.add(partial_assignment)
+        with pytest.raises(IntegrityError):
+            db.session.flush()
+        db.session.rollback()
+
+        second_partial_assignment = Appointment(
+            availability_slot_id=slot.id,
+            professional_id=None,
+            service_id=service.id,
+            modality="virtual",
+            contact_name="Otra asignación parcial",
+            contact_email="otra@example.test",
+            public_ticket_hash="f" * 64,
+            status="pending",
+        )
+        db.session.add(second_partial_assignment)
+        with pytest.raises(IntegrityError):
+            db.session.flush()
+
+
+def test_confirmada_sin_asignacion_es_rechazada(app):
+    with app.app_context():
+        service = Service(slug="clinica", name="Psicología Clínica", description="Ficticio")
+        db.session.add(service)
+        db.session.commit()
+
+        unassigned_confirmation = Appointment(
+            service_id=service.id,
+            modality="virtual",
+            contact_name="Otra persona de prueba",
+            contact_email="otra@example.test",
+            public_ticket_hash="f" * 64,
+            status="confirmed",
+        )
+        db.session.add(unassigned_confirmation)
+        with pytest.raises(IntegrityError):
+            db.session.flush()
+
+
+def test_pendiente_con_horario_asignado_requiere_fecha_de_expiracion(app):
     with app.app_context():
         service = Service(slug="clinica", name="Psicología Clínica", description="Ficticio")
         professional = Professional(full_name="Profesional de prueba", services=[service])

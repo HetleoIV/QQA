@@ -222,8 +222,20 @@ class Appointment(db.Model):
             f"modality IN ({_modality_sql})", name="ck_appointments_modality_allowed"
         ),
         CheckConstraint(
-            "status <> 'pending' OR hold_expires_at IS NOT NULL",
-            name="ck_appointments_pending_has_expiration",
+            "(professional_id IS NULL AND availability_slot_id IS NULL) "
+            "OR (professional_id IS NOT NULL AND availability_slot_id IS NOT NULL)",
+            name="ck_appointments_assignment_pair",
+        ),
+        CheckConstraint(
+            "status <> 'confirmed' OR "
+            "(professional_id IS NOT NULL AND availability_slot_id IS NOT NULL)",
+            name="ck_appointments_confirmed_has_assignment",
+        ),
+        CheckConstraint(
+            "status <> 'pending' "
+            "OR (availability_slot_id IS NULL AND hold_expires_at IS NULL) "
+            "OR (availability_slot_id IS NOT NULL AND hold_expires_at IS NOT NULL)",
+            name="ck_appointments_pending_assignment_expiration",
         ),
         CheckConstraint(
             "length(trim(contact_name)) > 0", name="ck_appointments_contact_name_not_empty"
@@ -234,8 +246,12 @@ class Appointment(db.Model):
         ),
         Index(
             "uq_appointments_active_slot", "availability_slot_id", unique=True,
-            sqlite_where=text("status IN ('pending', 'confirmed')"),
-            postgresql_where=text("status IN ('pending', 'confirmed')"),
+            sqlite_where=text(
+                "availability_slot_id IS NOT NULL AND status IN ('pending', 'confirmed')"
+            ),
+            postgresql_where=text(
+                "availability_slot_id IS NOT NULL AND status IN ('pending', 'confirmed')"
+            ),
         ),
         Index("ix_appointments_status_requested_at", "status", "requested_at"),
         Index("ix_appointments_service_status", "service_id", "status"),
@@ -243,9 +259,9 @@ class Appointment(db.Model):
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    availability_slot_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    professional_id: Mapped[int] = mapped_column(
-        ForeignKey("professionals.id", ondelete="RESTRICT"), nullable=False
+    availability_slot_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    professional_id: Mapped[int | None] = mapped_column(
+        ForeignKey("professionals.id", ondelete="RESTRICT"), nullable=True
     )
     service_id: Mapped[int] = mapped_column(
         ForeignKey("services.id", ondelete="RESTRICT"), nullable=False
@@ -273,7 +289,7 @@ class Appointment(db.Model):
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    availability_slot: Mapped[AvailabilitySlot] = relationship(
+    availability_slot: Mapped[AvailabilitySlot | None] = relationship(
         back_populates="appointments",
         primaryjoin=lambda: and_(
             AvailabilitySlot.id == foreign(Appointment.availability_slot_id),
@@ -281,7 +297,7 @@ class Appointment(db.Model):
         ),
         foreign_keys=lambda: [Appointment.availability_slot_id],
     )
-    professional: Mapped[Professional] = relationship(
+    professional: Mapped[Professional | None] = relationship(
         back_populates="appointments", foreign_keys=[professional_id]
     )
     service: Mapped[Service] = relationship(back_populates="appointments")

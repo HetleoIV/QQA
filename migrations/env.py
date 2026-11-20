@@ -97,14 +97,80 @@ def run_migrations_online():
     connectable = get_engine()
 
     with connectable.connect() as connection:
+        if connection.dialect.name == "sqlite":
+            _run_sqlite_migrations(connection, conf_args)
+            return
+
         context.configure(
             connection=connection,
             target_metadata=get_metadata(),
             **conf_args
         )
-
         with context.begin_transaction():
             context.run_migrations()
+
+
+def _run_sqlite_migrations(connection, conf_args):
+    """Ejecuta DDL de Alembic en una transacción SQLite real y verificable."""
+    foreign_keys_disabled = False
+    connection_discarded = False
+    try:
+        # PRAGMA foreign_keys no tiene efecto dentro de una transacción.
+        connection.exec_driver_sql("PRAGMA foreign_keys=OFF")
+        foreign_keys_disabled = True
+        connection.commit()  # Cierra el autobegin de SQLAlchemy antes del BEGIN real.
+
+        # sqlite3 en modo legacy no inicia una transacción al ejecutar DDL.
+        # BEGIN explícito hace reversibles CREATE/DROP/ALTER de batch_alter_table.
+        if connection.in_transaction():
+            raise RuntimeError(
+                "No se puede iniciar la migración SQLite dentro de otra transacción."
+            )
+        connection.exec_driver_sql("BEGIN")
+        if not connection.in_transaction():
+            raise RuntimeError("No se pudo iniciar la transacción SQLite de la migración.")
+        context.configure(
+            connection=connection,
+            target_metadata=get_metadata(),
+            **conf_args
+        )
+        # Alembic detecta la transacción ya abierta y no inicia otra.
+        with context.begin_transaction():
+            context.run_migrations()
+
+        violations = connection.exec_driver_sql("PRAGMA foreign_key_check").fetchall()
+        if violations:
+            raise RuntimeError(
+                "La migración SQLite dejó referencias foráneas inválidas."
+            )
+
+        connection.commit()
+    except BaseException:
+        if connection.in_transaction():
+            try:
+                connection.rollback()
+            except BaseException:
+                connection.invalidate()
+                connection_discarded = True
+        raise
+    finally:
+        if foreign_keys_disabled and not connection_discarded:
+            try:
+                if connection.in_transaction():
+                    connection.rollback()
+                connection.exec_driver_sql("PRAGMA foreign_keys=ON")
+                foreign_keys_enabled = connection.exec_driver_sql(
+                    "PRAGMA foreign_keys"
+                ).scalar_one()
+                connection.commit()
+                if foreign_keys_enabled != 1:
+                    raise RuntimeError(
+                        "No se pudieron reactivar las claves foráneas de SQLite."
+                    )
+            except BaseException:
+                # No permitir que el pool reutilice una conexión con estado desconocido.
+                connection.invalidate()
+                raise
 
 
 if context.is_offline_mode():
