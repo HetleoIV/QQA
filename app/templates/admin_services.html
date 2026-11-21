@@ -1,0 +1,38 @@
+{% extends "admin_base.html" %}
+{% block title %}Servicios · Q.A.A.{% endblock %}
+{% block admin_content %}
+  <section class="admin-users-page" aria-labelledby="services-title">
+    <header class="admin-users-header">
+      <div>
+        <p class="admin-dashboard-eyebrow">Catálogo institucional</p>
+        <h1 id="services-title">Servicios</h1>
+        <p class="admin-dashboard-subtitle">Consulta los servicios registrados en Q.A.A.</p>
+      </div>
+    </header>
+
+    <div class="admin-users-panel">
+      <div class="admin-users-panel-heading">
+        <div><h2>Servicios registrados</h2><p>Esta sección es de consulta.</p></div>
+        <span class="admin-users-count">{{ services|length }} servicios</span>
+      </div>
+      {% if services %}
+        <div class="admin-users-table-wrap">
+          <table class="admin-users-table">
+            <thead><tr><th scope="col">Nombre</th><th scope="col">Descripción</th><th scope="col">Estado</th></tr></thead>
+            <tbody>
+              {% for service in services %}
+                <tr>
+                  <td data-label="Nombre">{{ service.name }}</td>
+                  <td data-label="Descripción">{{ service.description }}</td>
+                  <td data-label="Estado"><span class="admin-users-state{% if not service.is_active %} is-inactive{% endif %}">{{ 'Activo' if service.is_active else 'Inactivo' }}</span></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="admin-users-empty">Todavía no hay servicios registrados.</p>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

@@ -430,6 +430,16 @@ def professionals():
     return render_template("admin_professionals.html", professionals=records)
 
 
+@admin_bp.get("/services")
+@admin_required
+def services():
+    """Muestra los servicios disponibles sin permitir cambios desde el panel."""
+    records = db.session.scalars(
+        select(Service).order_by(Service.display_order, Service.name, Service.id)
+    ).all()
+    return render_template("admin_services.html", services=records)
+
+
 @admin_bp.route("/professionals/new", methods=["GET", "POST"])
 @admin_required
 def create_professional():

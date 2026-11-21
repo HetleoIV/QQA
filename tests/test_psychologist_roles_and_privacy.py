@@ -179,7 +179,12 @@ def test_psicologo_inicia_sesion_y_no_accede_a_rutas_admin(role_workspace):
     response = login(client, "psychologist@example.test", PSYCHOLOGIST_PASSWORD)
     assert response.status_code == 302
     assert response.headers["Location"].endswith("/psychologist/appointments")
-    for path in ("/admin/dashboard", "/admin/users", "/admin/professionals"):
+    for path in (
+        "/admin/dashboard",
+        "/admin/users",
+        "/admin/professionals",
+        "/admin/services",
+    ):
         assert client.get(path, base_url=BASE_URL).status_code == 403
     assert client.get("/psychologist/appointments", base_url=BASE_URL).status_code == 200
 

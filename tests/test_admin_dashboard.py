@@ -239,12 +239,58 @@ def test_dashboard_muestra_navegacion_y_conserva_logout_con_csrf(admin_auth):
     page = response.get_data(as_text=True)
 
     for item in (
-        "Resumen", "Solicitudes", "Profesionales", "Servicios", "Disponibilidad",
-        "Notificaciones", "Cerrar sesión",
+        "Resumen", "Solicitudes", "Profesionales", "Servicios", "Usuarios",
+        "Cerrar sesión",
     ):
         assert item in page
+    assert "Próximamente" not in page
+    assert "Disponibilidad" not in page
+    assert "Notificaciones" not in page
     assert 'name="csrf_token"' in page
     assert 'action="/admin/logout"' in page
+
+
+def test_servicios_admin_muestra_datos_y_estado(admin_auth):
+    app, client, email, password, _administrator_id = admin_auth
+    with app.app_context():
+        db.session.add_all(
+            [
+                Service(
+                    slug="consulta-lectura",
+                    name="Servicio de lectura",
+                    description="Descripción visible.",
+                    is_active=True,
+                ),
+                Service(
+                    slug="consulta-inactiva",
+                    name="Servicio archivado",
+                    description="No recibe nuevas solicitudes.",
+                    is_active=False,
+                ),
+            ]
+        )
+        db.session.commit()
+    login_admin(client, email, password)
+
+    response = client.get("/admin/services", base_url="https://localhost")
+    page = response.get_data(as_text=True)
+
+    assert response.status_code == 200
+    assert "Servicio de lectura" in page
+    assert "Descripción visible." in page
+    assert "Activo" in page
+    assert "Servicio archivado" in page
+    assert "Inactivo" in page
+    assert 'href="/admin/services"' in page
+
+
+def test_servicios_admin_requiere_autenticacion(admin_auth):
+    _app, client, _email, _password, _administrator_id = admin_auth
+
+    response = client.get("/admin/services", base_url="https://localhost")
+
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/admin/login")
 
 
 def test_fecha_del_dashboard_usa_la_zona_horaria_de_peru(admin_auth, monkeypatch):
