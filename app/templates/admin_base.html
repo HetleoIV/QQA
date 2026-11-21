@@ -27,10 +27,10 @@
             <svg class="admin-dashboard-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/></svg>
             <span>Resumen</span>
           </a>
-          <span class="admin-dashboard-nav-link is-disabled" aria-disabled="true">
+          <a class="admin-dashboard-nav-link{% if request.endpoint == 'admin.appointments' %} is-active{% endif %}" href="{{ url_for('admin.appointments') }}"{% if request.endpoint == 'admin.appointments' %} aria-current="page"{% endif %}>
             <svg class="admin-dashboard-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M7.5 3.5v3M16.5 3.5v3M3.5 9.5h17"/></svg>
-            <span>Citas</span><small>Próximamente</small>
-          </span>
+            <span>Solicitudes</span>
+          </a>
           <span class="admin-dashboard-nav-link is-disabled" aria-disabled="true">
             <svg class="admin-dashboard-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.8 20c.5-3.3 2.7-5 6.2-5s5.7 1.7 6.2 5M16 5.2a3.5 3.5 0 0 1 0 6.6M17 15c2.3.5 3.7 2.1 4.2 5"/></svg>
             <span>Profesionales</span><small>Próximamente</small>
@@ -52,6 +52,10 @@
             <span>Usuarios</span>
           </a>
         </nav>
+
+        <a class="admin-dashboard-nav-link" href="{{ url_for('public.inicio') }}">
+          <span>Volver al inicio</span>
+        </a>
 
         <div class="admin-dashboard-sidebar-bottom">
           <div class="admin-dashboard-sidebar-note">

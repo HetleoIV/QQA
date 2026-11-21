@@ -11,7 +11,7 @@
         <p class="hero-lede">Un proyecto de consultoría integral que reúne orientación psicológica, legal y nutricional.</p>
         <p class="hero-motto">Tu bienestar, nuestra prioridad.</p>
         <a class="button" href="#cita">Solicitar una cita <span aria-hidden="true">↗</span></a>
-        <p class="hero-disclaimer">Proyecto universitario en desarrollo. La solicitud de demostración no se guarda ni confirma una cita.</p>
+        <p class="hero-disclaimer">Enviar una solicitud no confirma una cita. El equipo administrativo revisará cada caso.</p>
       </div>
       <figure class="hero-image">
         <img src="{{ url_for('static', filename='img/sala-referencial.jpg') }}" alt="Sala de reunión luminosa con mesa de madera y sillas; imagen referencial para el proyecto académico." fetchpriority="high">
@@ -141,7 +141,7 @@
         <h2 id="ethics-title">La privacidad guía cada etapa.</h2>
       </div>
       <div class="ethics-copy">
-        <p>La propuesta contempla consentimiento informado, protección de datos y acceso limitado a la información personal. El sistema de demostración no almacenará historias clínicas, diagnósticos ni evaluaciones.</p>
+        <p>Los datos de contacto y el servicio elegido se usan para gestionar y revisar la solicitud, con acceso limitado. No se solicitan ni almacenan historias clínicas, diagnósticos ni evaluaciones.</p>
         <p>El envío de una solicitud no equivale a una cita confirmada. La confirmación dependería de revisión administrativa y de la pertinencia profesional.</p>
         <div class="survey-note"><span class="survey-label">Mejora continua</span><p>La encuesta se presenta como parte del proceso institucional. En esta etapa no se recopilan respuestas digitales.</p></div>
       </div>
@@ -184,64 +184,69 @@
       <div class="section-heading booking-heading">
         <p class="eyebrow">09 · Solicitud de cita</p>
         <h2 id="booking-title">Cuéntanos qué servicio buscas.</h2>
-        <p>Esta maqueta permite recorrer el formulario. Todavía no registra datos ni consulta horarios reales.</p>
-        <p class="booking-status">Usa datos ficticios para probar. La maqueta no transmite ni guarda la información.</p>
+        <p>Cuéntanos cómo podemos contactarte. La solicitud quedará pendiente de revisión administrativa; todavía no es una cita confirmada.</p>
+        <p class="booking-status">No necesitas elegir profesional ni horario. No incluyas motivos de consulta ni información clínica.</p>
       </div>
       <div class="booking-panel">
-        <form id="booking-form">
+        {% for category, ticket in get_flashed_messages(with_categories=true, category_filter=['appointment_ticket']) %}
+          <div class="booking-confirmation" role="status" aria-live="polite">
+            <p class="eyebrow">Solicitud recibida</p>
+            <h3>Tu solicitud está pendiente de revisión.</h3>
+            <p>Conserva este ticket y el correo que ingresaste para consultar su estado más adelante.</p>
+            <p class="booking-ticket">Ticket <strong>{{ ticket }}</strong></p>
+          </div>
+        {% endfor %}
+        {% if form_notice %}<p class="form-alert" role="alert">{{ form_notice }}</p>{% endif %}
+        <form id="booking-form" method="post" action="{{ url_for('public.inicio') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token or '' }}">
           <div class="form-row">
             <label for="service">Servicio</label>
-            <select id="service" name="service" required>
+            <select id="service" name="service" required{% if not services or not csrf_token %} disabled{% endif %} aria-describedby="service-help{% if errors.get('service') %} service-error{% endif %}"{% if errors.get('service') %} aria-invalid="true"{% endif %}>
               <option value="">Selecciona un área</option>
-              <option value="psicologia-clinica">Psicología clínica</option>
-              <option value="psicologia-forense">Psicología forense</option>
-              <option value="psicologia-organizacional">Psicología organizacional</option>
-              <option value="asesoria-legal">Asesoría legal</option>
-              <option value="orientacion-nutricional">Orientación nutricional</option>
+              {% for service in services %}
+                <option value="{{ service.id }}"{% if form_data.get('service') == service.id|string %} selected{% endif %}>{{ service.name }}</option>
+              {% endfor %}
             </select>
+            <span class="form-help" id="service-help">El equipo administrativo revisará tu solicitud.</span>
+            {% if errors.get('service') %}<span class="field-error" id="service-error" role="alert">{{ errors.service }}</span>{% endif %}
           </div>
           <div class="form-row">
             <label for="modality">Modalidad de atención</label>
-            <select id="modality" name="modality" required>
-              <option value="virtual" selected>Virtual</option>
+            <select id="modality" name="modality" required{% if not csrf_token %} disabled{% endif %}{% if errors.get('modality') %} aria-invalid="true" aria-describedby="modality-error"{% endif %}>
+              <option value="">Selecciona una modalidad</option>
+              {% for value, label in modalities.items() %}
+                <option value="{{ value }}"{% if form_data.get('modality') == value %} selected{% endif %}>{{ label }}</option>
+              {% endfor %}
             </select>
-          </div>
-          <div class="form-pair">
-            <div class="form-row">
-              <label for="date">Fecha de preferencia</label>
-              <input id="date" name="date" type="date" required>
-            </div>
-            <div class="form-row">
-              <label for="time">Horario de ejemplo</label>
-              <select id="time" name="time" required>
-                <option value="">Elige una hora</option>
-                <option value="10:00">10:00</option>
-                <option value="11:30">11:30</option>
-                <option value="15:00">15:00</option>
-              </select>
-            </div>
+            {% if errors.get('modality') %}<span class="field-error" id="modality-error" role="alert">{{ errors.modality }}</span>{% endif %}
           </div>
           <div class="form-row">
-            <label for="name">Nombre</label>
-            <input id="name" name="name" type="text" autocomplete="name" required>
+            <label for="name">Nombre completo</label>
+            <input id="name" name="name" type="text" autocomplete="name" maxlength="120" value="{{ form_data.get('name', '') }}" required{% if not csrf_token %} disabled{% endif %}{% if errors.get('name') %} aria-invalid="true" aria-describedby="name-error"{% endif %}>
+            {% if errors.get('name') %}<span class="field-error" id="name-error" role="alert">{{ errors.name }}</span>{% endif %}
           </div>
           <div class="form-pair">
             <div class="form-row">
               <label for="email">Correo electrónico</label>
-              <input id="email" name="email" type="email" autocomplete="email" required>
+              <input id="email" name="email" type="email" autocomplete="email" maxlength="254" value="{{ form_data.get('email', '') }}" required{% if not csrf_token %} disabled{% endif %}{% if errors.get('email') %} aria-invalid="true" aria-describedby="email-error"{% endif %}>
+              {% if errors.get('email') %}<span class="field-error" id="email-error" role="alert">{{ errors.email }}</span>{% endif %}
             </div>
             <div class="form-row">
-              <label for="phone">Teléfono (opcional)</label>
-              <input id="phone" name="phone" type="tel" autocomplete="tel">
+              <label for="phone">Teléfono</label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="32" value="{{ form_data.get('phone', '') }}" placeholder="Ej. +51 900 123 456" required{% if not csrf_token %} disabled{% endif %}{% if errors.get('phone') %} aria-invalid="true" aria-describedby="phone-error"{% endif %}>
+              {% if errors.get('phone') %}<span class="field-error" id="phone-error" role="alert">{{ errors.phone }}</span>{% endif %}
             </div>
           </div>
-          <label class="consent-row" for="consent">
-            <input id="consent" name="consent" type="checkbox" required>
-            <span>Confirmo que los datos ingresados son ficticios.</span>
-          </label>
-          <button class="button form-button" id="demo-submit" type="button">Revisar solicitud de demostración <span aria-hidden="true">↗</span></button>
+          <div class="consent-block">
+            <label class="consent-row" for="consent">
+              <input id="consent" name="consent" type="checkbox" value="yes" required{% if form_data.get('consent') == 'yes' %} checked{% endif %}{% if not csrf_token %} disabled{% endif %}{% if errors.get('consent') %} aria-invalid="true" aria-describedby="consent-error"{% endif %}>
+              <span>He leído y acepto el <a href="#etica">aviso de privacidad</a>. Autorizo el uso de mis datos para gestionar esta solicitud.</span>
+            </label>
+            {% if errors.get('consent') %}<span class="field-error" id="consent-error" role="alert">{{ errors.consent }}</span>{% endif %}
+          </div>
+          {% if not services and not form_notice %}<p class="form-alert" role="status">No hay servicios disponibles para solicitar una cita en este momento.</p>{% endif %}
+          <button class="button form-button" id="booking-submit" type="submit"{% if not csrf_token or not services %} disabled{% endif %}>Enviar solicitud <span aria-hidden="true">↗</span></button>
           <p class="form-help">No incluyas motivos de consulta, diagnósticos ni otra información sensible.</p>
-          <p class="form-result" id="form-result" role="status" aria-live="polite"></p>
         </form>
       </div>
     </div>

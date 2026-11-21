@@ -16,7 +16,7 @@
 
     <header class="site-header">
       <div class="wrap header-inner">
-        <a class="brand" href="#inicio" aria-label="Q.A.A., ir al inicio">
+        <a class="brand" href="{{ url_for('public.inicio') }}#inicio" aria-label="Q.A.A., ir al inicio">
           <span class="brand-name">Q.A.A.</span>
           <span class="brand-description">Consultoría integral</span>
         </a>
@@ -27,11 +27,11 @@
         </button>
 
         <nav class="site-nav" id="site-nav" aria-label="Navegación principal">
-          <a href="#nosotros">Nosotros</a>
-          <a href="#servicios">Servicios</a>
-          <a href="#equipo">Equipo</a>
-          <a href="#proceso">Proceso</a>
-          <a class="button button-small" href="#cita">Solicitar una cita</a>
+          <a href="{{ url_for('public.inicio') }}#nosotros">Nosotros</a>
+          <a href="{{ url_for('public.inicio') }}#servicios">Servicios</a>
+          <a href="{{ url_for('public.inicio') }}#equipo">Equipo</a>
+          <a href="{{ url_for('public.inicio') }}#proceso">Proceso</a>
+          <a class="button button-small" href="{{ url_for('public.inicio') }}#cita">Solicitar una cita</a>
         </nav>
       </div>
     </header>
@@ -43,11 +43,11 @@
     <footer class="site-footer" id="cierre">
       <div class="wrap footer-main">
         <div>
-          <a class="footer-brand" href="#inicio">Q.A.A.</a>
+          <a class="footer-brand" href="{{ url_for('public.inicio') }}#inicio">Q.A.A.</a>
           <p>Evaluación, Acompañamiento y Asesoría.</p>
         </div>
-        <a class="button button-small button-light" href="{{ url_for('admin.login') }}">Acceso administrativo</a>
-        <a class="footer-top" href="#inicio">Volver al inicio <span aria-hidden="true">↑</span></a>
+        <a class="button button-small button-light" href="{{ url_for('admin.dashboard') }}">Acceso administrativo</a>
+        <a class="footer-top" href="{{ url_for('public.inicio') }}#inicio">Volver al inicio <span aria-hidden="true">↑</span></a>
       </div>
       <div class="wrap footer-meta">
         <p>Propuesta académica. No representa un centro actualmente operativo.</p>

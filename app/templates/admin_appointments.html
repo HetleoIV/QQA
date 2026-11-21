@@ -1,0 +1,70 @@
+{% extends "admin_base.html" %}
+{% block title %}Solicitudes · Q.A.A.{% endblock %}
+{% block admin_content %}
+  <section class="admin-users-page" aria-labelledby="appointments-title">
+    <header class="admin-users-header">
+      <div>
+        <p class="admin-dashboard-eyebrow">Atención</p>
+        <h1 id="appointments-title">Solicitudes</h1>
+        <p class="admin-dashboard-subtitle">Revisa las solicitudes recibidas y su estado actual.</p>
+      </div>
+    </header>
+
+    <div class="admin-users-panel">
+      <div class="admin-users-panel-heading">
+        <div>
+          <h2>Solicitudes recibidas</h2>
+          <p>Las más recientes aparecen primero.</p>
+        </div>
+        <span class="admin-users-count">{{ pagination.total }} solicitudes</span>
+      </div>
+
+      {% if pagination.items %}
+        <div class="admin-users-table-wrap">
+          <table class="admin-users-table">
+            <thead>
+              <tr>
+                <th scope="col">Solicitante</th>
+                <th scope="col">Servicio</th>
+                <th scope="col">Modalidad</th>
+                <th scope="col">Contacto</th>
+                <th scope="col">Registro</th>
+                <th scope="col">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for appointment in pagination.items %}
+                <tr>
+                  <td data-label="Solicitante">{{ appointment.contact_name }}</td>
+                  <td data-label="Servicio">{{ appointment.service.name }}</td>
+                  <td data-label="Modalidad">{{ modality_labels.get(appointment.modality, appointment.modality) }}</td>
+                  <td data-label="Contacto">
+                    <span>{{ appointment.contact_email }}</span>
+                    {% if appointment.contact_phone %}<br><span>{{ appointment.contact_phone }}</span>{% else %}<br><span>Teléfono no indicado</span>{% endif %}
+                  </td>
+                  {% set requested_at = requested_at_by_id[appointment.id] %}
+                  <td data-label="Registro"><time datetime="{{ requested_at.isoformat() }}">{{ requested_at.strftime('%d/%m/%Y %H:%M') }}</time></td>
+                  <td data-label="Estado"><span class="admin-users-state{% if appointment.status not in ('pending', 'confirmed') %} is-inactive{% endif %}">{{ status_labels.get(appointment.status, appointment.status) }}</span></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        {% if pagination.pages > 1 %}
+          <nav class="admin-appointments-pager" aria-label="Paginación de solicitudes">
+            {% if pagination.has_prev %}
+              <a class="admin-users-cancel" href="{{ url_for('admin.appointments', page=pagination.prev_num) }}">Anterior</a>
+            {% endif %}
+            <span>Página {{ pagination.page }} de {{ pagination.pages }}</span>
+            {% if pagination.has_next %}
+              <a class="admin-users-cancel" href="{{ url_for('admin.appointments', page=pagination.next_num) }}">Siguiente</a>
+            {% endif %}
+          </nav>
+        {% endif %}
+      {% else %}
+        <p class="admin-users-empty">Todavía no hay solicitudes para mostrar.</p>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

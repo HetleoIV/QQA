@@ -16,28 +16,18 @@ if (menuButton && navigation) {
   });
 }
 
-const dateInput = document.querySelector("#date");
-
-if (dateInput) {
-  const now = new Date();
-  const localToday = new Date(now.getTime() - now.getTimezoneOffset() * 60_000)
-    .toISOString()
-    .slice(0, 10);
-  dateInput.min = localToday;
-}
-
 const bookingForm = document.querySelector("#booking-form");
-const demoSubmit = document.querySelector("#demo-submit");
-const formResult = document.querySelector("#form-result");
 
-if (bookingForm && demoSubmit && formResult) {
-  demoSubmit.addEventListener("click", () => {
-    if (!bookingForm.reportValidity()) {
+if (bookingForm) {
+  bookingForm.addEventListener("submit", () => {
+    const submitButton = bookingForm.querySelector("#booking-submit");
+    if (!submitButton) {
       return;
     }
 
-    formResult.textContent = "Se agendó la cita.";
-    formResult.classList.add("is-visible");
+    submitButton.disabled = true;
+    submitButton.textContent = "Enviando solicitud…";
+    bookingForm.setAttribute("aria-busy", "true");
   });
 }
 

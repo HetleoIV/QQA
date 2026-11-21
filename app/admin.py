@@ -1,6 +1,6 @@
 """Autenticación y rutas provisionales del área administrativa."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from contextlib import contextmanager
 from functools import wraps
 import hmac
@@ -21,17 +21,30 @@ from flask import (
 )
 from sqlalchemy import func, select, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import joinedload
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .admin_account_lock import lock_postgresql_admin_mutations
 from .extensions import db
-from .models import Administrator, AppointmentStatusHistory
+from .models import Administrator, Appointment, AppointmentStatusHistory
 
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 _ADMINISTRATOR_SESSION_KEY = "administrator_id"
 _CSRF_SESSION_KEY = "admin_csrf_token"
 _INVALID_CREDENTIALS_MESSAGE = "Correo electrónico o contraseña incorrectos."
+_APPOINTMENT_STATUS_LABELS = {
+    "pending": "Pendiente",
+    "confirmed": "Confirmada",
+    "rejected": "Rechazada",
+    "cancelled": "Cancelada",
+    "expired": "Vencida",
+}
+_APPOINTMENT_MODALITY_LABELS = {
+    "in_person": "Presencial",
+    "virtual": "Virtual",
+    "hybrid": "Híbrida",
+}
 _DASHBOARD_TIMEZONE = ZoneInfo("America/Lima")
 _WEEKDAYS_ES = (
     "lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"
@@ -44,6 +57,13 @@ _MONTHS_SHORT_ES = (
     "ene", "feb", "mar", "abr", "may", "jun",
     "jul", "ago", "sep", "oct", "nov", "dic",
 )
+
+
+def _requested_at_in_dashboard_timezone(requested_at: datetime) -> datetime:
+    """Normaliza las fechas guardadas y las presenta en la zona horaria de Lima."""
+    if requested_at.tzinfo is None:
+        requested_at = requested_at.replace(tzinfo=timezone.utc)
+    return requested_at.astimezone(_DASHBOARD_TIMEZONE)
 
 
 class _AccountActionError(Exception):
@@ -116,6 +136,12 @@ def _csrf_token() -> str:
         token = secrets.token_urlsafe(32)
         session[_CSRF_SESSION_KEY] = token
     return token
+
+
+@admin_bp.context_processor
+def inject_admin_csrf_token():
+    """Hace disponible el token en la plantilla base de todas las rutas admin."""
+    return {"csrf_token": _csrf_token()}
 
 
 def _valid_csrf_token() -> bool:
@@ -191,7 +217,15 @@ def login():
 @admin_bp.get("/dashboard")
 @admin_required
 def dashboard():
-    """Muestra el diseño del panel con registros ficticios, sin consultar citas."""
+    """Muestra indicadores reales de solicitudes y una agenda de demostración."""
+    status_counts = dict(
+        db.session.execute(
+            select(Appointment.status, func.count(Appointment.id)).group_by(
+                Appointment.status
+            )
+        ).all()
+    )
+    total_requests = sum(status_counts.values())
     now_in_peru = datetime.now(_DASHBOARD_TIMEZONE)
     today_in_peru = now_in_peru.date()
     current_date_label = (
@@ -247,20 +281,20 @@ def dashboard():
     metrics = (
         {
             "label": "Citas totales",
-            "value": 24,
-            "note": "Registros de demostración",
+            "value": total_requests,
+            "note": "Solicitudes recibidas",
             "icon": "calendar",
         },
         {
             "label": "Solicitudes pendientes",
-            "value": 5,
-            "note": "Registros de demostración",
+            "value": status_counts.get("pending", 0),
+            "note": "Requieren revisión administrativa",
             "icon": "pending",
         },
         {
             "label": "Citas confirmadas",
-            "value": 16,
-            "note": "Registros de demostración",
+            "value": status_counts.get("confirmed", 0),
+            "note": "Solicitudes confirmadas",
             "icon": "confirmed",
         },
         {
@@ -284,6 +318,31 @@ def dashboard():
         metrics=metrics,
         upcoming_appointments=upcoming_appointments,
         recent_activity=recent_activity,
+    )
+
+
+@admin_bp.get("/appointments")
+@admin_required
+def appointments():
+    """Lista solicitudes sin exigir profesional ni horario asignado."""
+    pagination = db.paginate(
+        select(Appointment)
+        .options(joinedload(Appointment.service))
+        .order_by(Appointment.requested_at.desc(), Appointment.id.desc()),
+        page=request.args.get("page", 1, type=int),
+        per_page=20,
+        error_out=False,
+    )
+    requested_at_by_id = {
+        appointment.id: _requested_at_in_dashboard_timezone(appointment.requested_at)
+        for appointment in pagination.items
+    }
+    return render_template(
+        "admin_appointments.html",
+        pagination=pagination,
+        requested_at_by_id=requested_at_by_id,
+        status_labels=_APPOINTMENT_STATUS_LABELS,
+        modality_labels=_APPOINTMENT_MODALITY_LABELS,
     )
 
 
