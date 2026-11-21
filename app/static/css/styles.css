@@ -324,8 +324,18 @@ h1 span { display: block; margin-top: 15px; font-family: var(--sans); font-size:
 .admin-users-form { max-width: 610px; display: grid; gap: 10px; }
 .admin-users-form label { margin-top: 8px; color: #405247; font-size: 11px; font-weight: 650; }
 .admin-users-form label span { color: #79877f; font-weight: 400; }
-.admin-users-form input:not([type="hidden"]):not([type="checkbox"]) { width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid #d9e1dc; border-radius: 7px; background: #fff; color: #263b30; font: inherit; font-size: 12px; }
+.admin-users-form input:not([type="hidden"]):not([type="checkbox"]), .admin-users-form select { width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid #d9e1dc; border-radius: 7px; background: #fff; color: #263b30; font: inherit; font-size: 12px; }
 .admin-users-form input:focus { outline: 3px solid rgba(83, 127, 96, .18); border-color: #5b876a; }
+.admin-professional-services { margin: 8px 0 0; padding: 13px; border: 1px solid var(--admin-line); border-radius: 8px; }
+.admin-professional-services legend { padding-inline: 5px; color: #405247; font-size: 11px; font-weight: 650; }
+.admin-users-form .admin-professional-service-option { display: flex; align-items: center; gap: 9px; margin: 9px 0; font-weight: 400; }
+.admin-professional-service-option input { accent-color: #315b40; }
+.admin-appointment-actions-panel, .admin-appointment-history { margin-top: 20px; }
+.admin-appointment-actions-panel h2, .admin-appointment-history h2 { margin: 0 0 8px; color: #20392f; font-size: 16px; }
+.admin-appointment-actions-panel .admin-dashboard-subtitle { margin: 0 0 16px; }
+.admin-appointment-history ul { margin: 0; padding: 0; list-style: none; }
+.admin-appointment-history li { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-top: 1px solid var(--admin-line); color: #405247; font-size: 11px; }
+.admin-appointment-history li span { color: var(--admin-muted); }
 .admin-users-form-actions, .admin-users-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
 .admin-users-detail-card dl { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
 .admin-users-detail-card dl > div { min-width: 0; }

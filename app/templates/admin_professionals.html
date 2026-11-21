@@ -1,0 +1,28 @@
+{% extends "admin_base.html" %}
+{% block title %}Profesionales · Q.A.A.{% endblock %}
+{% block admin_content %}
+  <section class="admin-users-page" aria-labelledby="professionals-title">
+    <header class="admin-users-header">
+      <div><p class="admin-dashboard-eyebrow">Equipo de atención</p><h1 id="professionals-title">Profesionales</h1><p class="admin-dashboard-subtitle">Administra perfiles y servicios sin eliminar su historial.</p></div>
+      <a class="admin-users-button" href="{{ url_for('admin.create_professional') }}">Registrar profesional</a>
+    </header>
+    <div class="admin-users-panel">
+      <div class="admin-users-panel-heading"><div><h2>Integrantes registrados</h2><p>Los profesionales inactivos no aparecerán para nuevas asignaciones.</p></div><span class="admin-users-count">{{ professionals|length }} profesionales</span></div>
+      {% if professionals %}
+        <div class="admin-users-table-wrap"><table class="admin-users-table"><thead><tr><th scope="col">Nombre</th><th scope="col">Correo</th><th scope="col">Servicios</th><th scope="col">Estado</th><th scope="col"><span class="admin-users-visually-hidden">Acciones</span></th></tr></thead><tbody>
+          {% for professional in professionals %}<tr>
+            <td data-label="Nombre"><a href="{{ url_for('admin.edit_professional', professional_id=professional.id) }}">{{ professional.full_name }}</a></td>
+            <td data-label="Correo">{{ professional.email or 'Pendiente de registrar' }}</td>
+            <td data-label="Servicios">{{ professional.services|map(attribute='name')|join(', ') or 'Sin servicio asignado' }}</td>
+            <td data-label="Estado"><span class="admin-users-state{% if not professional.is_active %} is-inactive{% endif %}">{{ 'Activo' if professional.is_active else 'Inactivo' }}</span></td>
+            <td data-label="Acción"><div class="admin-users-actions">
+              <a class="admin-users-text-link" href="{{ url_for('admin.edit_professional', professional_id=professional.id) }}">Editar</a>
+              {% if professional.is_active %}<form method="post" action="{{ url_for('admin.deactivate_professional', professional_id=professional.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="admin-users-danger-link" type="submit">Desactivar</button></form>
+              {% else %}<form method="post" action="{{ url_for('admin.activate_professional', professional_id=professional.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="admin-users-button" type="submit">Activar</button></form>{% endif %}
+            </div></td>
+          </tr>{% endfor %}
+        </tbody></table></div>
+      {% else %}<p class="admin-users-empty">Todavía no hay profesionales registrados.</p>{% endif %}
+    </div>
+  </section>
+{% endblock %}

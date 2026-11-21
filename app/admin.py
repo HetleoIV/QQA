@@ -1,6 +1,6 @@
 """Autenticación y rutas provisionales del área administrativa."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, time, timedelta, timezone
 from contextlib import contextmanager
 from functools import wraps
 import hmac
@@ -21,12 +21,19 @@ from flask import (
 )
 from sqlalchemy import func, select, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .admin_account_lock import lock_postgresql_admin_mutations
 from .extensions import db
-from .models import Administrator, Appointment, AppointmentStatusHistory
+from .models import (
+    Administrator,
+    Appointment,
+    AppointmentStatusHistory,
+    AvailabilitySlot,
+    Professional,
+    Service,
+)
 
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
@@ -68,6 +75,14 @@ def _requested_at_in_dashboard_timezone(requested_at: datetime) -> datetime:
 
 class _AccountActionError(Exception):
     """Error de negocio seguro para mostrar al administrar cuentas."""
+
+
+class _ProfessionalActionError(Exception):
+    """Error de negocio al gestionar profesionales."""
+
+
+class _AppointmentActionError(Exception):
+    """Error de negocio al revisar o asignar solicitudes."""
 
 
 @contextmanager
@@ -115,6 +130,58 @@ def _show_account_action_error(error: Exception) -> None:
         flash("No se pudo guardar: revisa si el correo ya está registrado.", "error")
     elif isinstance(error, SQLAlchemyError):
         current_app.logger.error("Falló una operación de administración de cuentas.")
+        flash("No se pudo completar la operación. Inténtalo nuevamente.", "error")
+    else:
+        raise error
+
+
+def _valid_email(email: str) -> bool:
+    if len(email) > 254 or email.count("@") != 1 or any(c.isspace() for c in email):
+        return False
+    local, domain = email.split("@", 1)
+    return bool(local and domain and "." in domain and not domain.startswith("."))
+
+
+def _render_professional_form(professional=None, *, selected_service_ids=(), status=200):
+    services = db.session.scalars(
+        select(Service).order_by(Service.display_order, Service.name)
+    ).all()
+    return render_template(
+        "admin_professional_form.html",
+        professional=professional,
+        services=services,
+        selected_service_ids=set(selected_service_ids),
+        csrf_token=_csrf_token(),
+    ), status
+
+
+def _show_professional_action_error(error: Exception) -> None:
+    if isinstance(error, _ProfessionalActionError):
+        flash(str(error), "error")
+    elif isinstance(error, IntegrityError):
+        db.session.rollback()
+        flash("No se pudo guardar: revisa si el correo está duplicado.", "error")
+    elif isinstance(error, SQLAlchemyError):
+        db.session.rollback()
+        current_app.logger.error("Falló una operación de gestión de profesionales.")
+        flash("No se pudo completar la operación. Inténtalo nuevamente.", "error")
+    else:
+        raise error
+
+
+def _show_appointment_action_error(error: Exception) -> None:
+    if isinstance(error, _AppointmentActionError):
+        flash(str(error), "error")
+    elif isinstance(error, (IntegrityError, ValueError)):
+        db.session.rollback()
+        flash(
+            "No se pudo reservar ese horario porque dejó de estar disponible. "
+            "Elige otra fecha u hora.",
+            "error",
+        )
+    elif isinstance(error, SQLAlchemyError):
+        db.session.rollback()
+        current_app.logger.error("Falló una operación de asignación de solicitudes.")
         flash("No se pudo completar la operación. Inténtalo nuevamente.", "error")
     else:
         raise error
@@ -344,6 +411,367 @@ def appointments():
         status_labels=_APPOINTMENT_STATUS_LABELS,
         modality_labels=_APPOINTMENT_MODALITY_LABELS,
     )
+
+
+@admin_bp.get("/professionals")
+@admin_required
+def professionals():
+    records = db.session.scalars(
+        select(Professional)
+        .options(selectinload(Professional.services))
+        .order_by(Professional.full_name, Professional.id)
+    ).all()
+    return render_template("admin_professionals.html", professionals=records)
+
+
+@admin_bp.route("/professionals/new", methods=["GET", "POST"])
+@admin_required
+def create_professional():
+    if request.method == "GET":
+        return _render_professional_form()
+    if not _valid_csrf_token():
+        _csrf_failure()
+
+    full_name = " ".join(request.form.get("full_name", "").split())
+    email = request.form.get("email", "").strip().lower()
+    selected_ids = request.form.getlist("service_ids")
+    try:
+        service_ids = {int(value) for value in selected_ids}
+    except ValueError:
+        service_ids = set()
+    error = None
+    if not full_name or len(full_name) > 120:
+        error = "Ingresa un nombre de hasta 120 caracteres."
+    elif not _valid_email(email):
+        error = "Ingresa un correo electrónico válido."
+    elif not service_ids or len(service_ids) != len(selected_ids):
+        error = "Selecciona al menos un servicio válido."
+
+    if error:
+        flash(error, "error")
+        return _render_professional_form(
+            selected_service_ids=service_ids, status=400
+        )
+
+    try:
+        with _administrator_write_transaction(g.administrator.id):
+            duplicate = db.session.scalar(
+                select(Professional.id).where(func.lower(Professional.email) == email)
+            )
+            if duplicate is not None:
+                raise _ProfessionalActionError("Ya existe un profesional con ese correo.")
+            services = db.session.scalars(
+                select(Service).where(
+                    Service.id.in_(service_ids), Service.is_active.is_(True)
+                )
+            ).all()
+            if len(services) != len(service_ids):
+                raise _ProfessionalActionError("Selecciona únicamente servicios activos.")
+            professional = Professional(
+                full_name=full_name, email=email, is_active=True, services=services
+            )
+            db.session.add(professional)
+            db.session.flush()
+            professional_id = professional.id
+    except (IntegrityError, SQLAlchemyError, _ProfessionalActionError) as error:
+        _show_professional_action_error(error)
+        return _render_professional_form(
+            selected_service_ids=service_ids, status=400
+        )
+
+    flash("El profesional fue registrado.", "success")
+    return redirect(url_for("admin.edit_professional", professional_id=professional_id))
+
+
+@admin_bp.route("/professionals/<int:professional_id>/edit", methods=["GET", "POST"])
+@admin_required
+def edit_professional(professional_id: int):
+    professional = db.session.scalar(
+        select(Professional)
+        .options(selectinload(Professional.services))
+        .where(Professional.id == professional_id)
+    )
+    if professional is None:
+        abort(404)
+    if request.method == "GET":
+        return _render_professional_form(
+            professional, selected_service_ids=[s.id for s in professional.services]
+        )
+    if not _valid_csrf_token():
+        _csrf_failure()
+
+    full_name = " ".join(request.form.get("full_name", "").split())
+    email = request.form.get("email", "").strip().lower()
+    selected_ids = request.form.getlist("service_ids")
+    try:
+        service_ids = {int(value) for value in selected_ids}
+    except ValueError:
+        service_ids = set()
+    error = None
+    if not full_name or len(full_name) > 120:
+        error = "Ingresa un nombre de hasta 120 caracteres."
+    elif not _valid_email(email):
+        error = "Ingresa un correo electrónico válido."
+    elif not service_ids or len(service_ids) != len(selected_ids):
+        error = "Selecciona al menos un servicio válido."
+
+    if error:
+        flash(error, "error")
+        return _render_professional_form(
+            professional, selected_service_ids=service_ids, status=400
+        )
+
+    try:
+        with _administrator_write_transaction(g.administrator.id):
+            current = db.session.scalar(
+                select(Professional)
+                .where(Professional.id == professional_id)
+                .with_for_update()
+            )
+            if current is None:
+                raise _ProfessionalActionError("El profesional ya no existe.")
+            duplicate = db.session.scalar(
+                select(Professional.id).where(
+                    func.lower(Professional.email) == email,
+                    Professional.id != professional_id,
+                )
+            )
+            if duplicate is not None:
+                raise _ProfessionalActionError("Ya existe un profesional con ese correo.")
+            current_service_ids = {service.id for service in current.services}
+            services = db.session.scalars(
+                select(Service).where(
+                    Service.id.in_(service_ids),
+                    (Service.is_active.is_(True) | Service.id.in_(current_service_ids)),
+                )
+            ).all()
+            if len(services) != len(service_ids):
+                raise _ProfessionalActionError("Selecciona servicios válidos.")
+            current.full_name = full_name
+            current.email = email
+            current.services = services
+    except (IntegrityError, SQLAlchemyError, _ProfessionalActionError) as error:
+        _show_professional_action_error(error)
+        db.session.expire_all()
+        professional = db.session.scalar(
+            select(Professional)
+            .options(selectinload(Professional.services))
+            .where(Professional.id == professional_id)
+        )
+        return _render_professional_form(
+            professional, selected_service_ids=service_ids, status=400
+        )
+
+    flash("Los datos del profesional fueron actualizados.", "success")
+    return redirect(url_for("admin.professionals"))
+
+
+@admin_bp.post("/professionals/<int:professional_id>/activate")
+@admin_required
+def activate_professional(professional_id: int):
+    if not _valid_csrf_token():
+        _csrf_failure()
+    try:
+        with _administrator_write_transaction(g.administrator.id):
+            professional = db.session.scalar(
+                select(Professional)
+                .where(Professional.id == professional_id)
+                .with_for_update()
+            )
+            if professional is None:
+                raise _ProfessionalActionError("El profesional indicado no existe.")
+            professional.is_active = True
+    except (IntegrityError, SQLAlchemyError, _ProfessionalActionError) as error:
+        _show_professional_action_error(error)
+    else:
+        flash("El profesional fue activado.", "success")
+    return redirect(url_for("admin.professionals"))
+
+
+@admin_bp.post("/professionals/<int:professional_id>/deactivate")
+@admin_required
+def deactivate_professional(professional_id: int):
+    if not _valid_csrf_token():
+        _csrf_failure()
+    try:
+        with _administrator_write_transaction(g.administrator.id):
+            professional = db.session.scalar(
+                select(Professional)
+                .where(Professional.id == professional_id)
+                .with_for_update()
+            )
+            if professional is None:
+                raise _ProfessionalActionError("El profesional indicado no existe.")
+            professional.is_active = False
+    except (IntegrityError, SQLAlchemyError, _ProfessionalActionError) as error:
+        _show_professional_action_error(error)
+    else:
+        flash("El profesional fue desactivado. Su historial se conserva.", "success")
+    return redirect(url_for("admin.professionals"))
+
+
+def _appointment_detail(appointment_id: int):
+    appointment = db.session.scalar(
+        select(Appointment)
+        .options(
+            joinedload(Appointment.service),
+            joinedload(Appointment.professional),
+            joinedload(Appointment.availability_slot),
+            selectinload(Appointment.status_history),
+        )
+        .where(Appointment.id == appointment_id)
+    )
+    if appointment is None:
+        abort(404)
+    professionals = db.session.scalars(
+        select(Professional)
+        .where(
+            Professional.is_active.is_(True),
+            Professional.services.any(Service.id == appointment.service_id),
+        )
+        .order_by(Professional.full_name)
+    ).all()
+    return render_template(
+        "admin_appointment_detail.html",
+        appointment=appointment,
+        professionals=professionals,
+        status_labels=_APPOINTMENT_STATUS_LABELS,
+        modality_labels=_APPOINTMENT_MODALITY_LABELS,
+        csrf_token=_csrf_token(),
+    )
+
+
+@admin_bp.get("/appointments/<int:appointment_id>")
+@admin_required
+def appointment_detail(appointment_id: int):
+    return _appointment_detail(appointment_id)
+
+
+@admin_bp.post("/appointments/<int:appointment_id>/assign")
+@admin_required
+def assign_appointment(appointment_id: int):
+    if not _valid_csrf_token():
+        _csrf_failure()
+    try:
+        professional_id = int(request.form.get("professional_id", ""))
+        selected_date = date.fromisoformat(request.form.get("date", ""))
+        selected_time = time.fromisoformat(request.form.get("time", ""))
+    except ValueError:
+        flash("Selecciona un profesional, una fecha y una hora válidos.", "error")
+        return redirect(url_for("admin.appointment_detail", appointment_id=appointment_id))
+    if selected_time.second or selected_time.microsecond:
+        flash("La hora debe indicar minutos exactos.", "error")
+        return redirect(url_for("admin.appointment_detail", appointment_id=appointment_id))
+
+    starts_at = datetime.combine(selected_date, selected_time, tzinfo=_DASHBOARD_TIMEZONE)
+    ends_at = starts_at + timedelta(hours=1)
+    if starts_at <= datetime.now(_DASHBOARD_TIMEZONE):
+        flash("La fecha y hora deben ser futuras.", "error")
+        return redirect(url_for("admin.appointment_detail", appointment_id=appointment_id))
+
+    try:
+        with _administrator_write_transaction(g.administrator.id) as actor:
+            appointment = db.session.scalar(
+                select(Appointment)
+                .where(Appointment.id == appointment_id)
+                .with_for_update()
+            )
+            if appointment is None:
+                raise _AppointmentActionError("La solicitud indicada no existe.")
+            if appointment.status != "pending" or appointment.professional_id is not None:
+                raise _AppointmentActionError("Esta solicitud ya no está pendiente de asignación.")
+            professional = db.session.scalar(
+                select(Professional)
+                .where(
+                    Professional.id == professional_id,
+                    Professional.is_active.is_(True),
+                    Professional.services.any(Service.id == appointment.service_id),
+                )
+                .with_for_update()
+            )
+            if professional is None:
+                raise _AppointmentActionError(
+                    "Selecciona un profesional activo que atienda el servicio solicitado."
+                )
+
+            slot = db.session.scalar(
+                select(AvailabilitySlot)
+                .where(
+                    AvailabilitySlot.professional_id == professional_id,
+                    AvailabilitySlot.starts_at == starts_at,
+                    AvailabilitySlot.ends_at == ends_at,
+                )
+                .with_for_update()
+            )
+            if slot is not None and not slot.is_enabled:
+                raise _AppointmentActionError("Ese horario no está habilitado.")
+            if slot is None:
+                slot = AvailabilitySlot(
+                    professional_id=professional_id,
+                    starts_at=starts_at,
+                    ends_at=ends_at,
+                    is_enabled=True,
+                )
+                db.session.add(slot)
+                # Ejecuta validación ORM y el trigger transaccional de solapamiento.
+                db.session.flush()
+
+            previous_status = appointment.status
+            appointment.professional_id = professional_id
+            appointment.availability_slot_id = slot.id
+            appointment.status = "confirmed"
+            appointment.hold_expires_at = None
+            appointment.confirmed_at = datetime.now(timezone.utc)
+            db.session.add(
+                AppointmentStatusHistory(
+                    appointment_id=appointment.id,
+                    previous_status=previous_status,
+                    new_status="confirmed",
+                    changed_by_administrator_id=actor.id,
+                    change_source="administrator",
+                )
+            )
+    except (IntegrityError, SQLAlchemyError, ValueError, _AppointmentActionError) as error:
+        _show_appointment_action_error(error)
+        return redirect(url_for("admin.appointment_detail", appointment_id=appointment_id))
+
+    flash("La cita fue asignada y confirmada.", "success")
+    return redirect(url_for("admin.appointment_detail", appointment_id=appointment_id))
+
+
+@admin_bp.post("/appointments/<int:appointment_id>/reject")
+@admin_required
+def reject_appointment(appointment_id: int):
+    if not _valid_csrf_token():
+        _csrf_failure()
+    try:
+        with _administrator_write_transaction(g.administrator.id) as actor:
+            appointment = db.session.scalar(
+                select(Appointment)
+                .where(Appointment.id == appointment_id)
+                .with_for_update()
+            )
+            if appointment is None:
+                raise _AppointmentActionError("La solicitud indicada no existe.")
+            if appointment.status != "pending":
+                raise _AppointmentActionError("Solo se pueden rechazar solicitudes pendientes.")
+            appointment.status = "rejected"
+            appointment.hold_expires_at = None
+            db.session.add(
+                AppointmentStatusHistory(
+                    appointment_id=appointment.id,
+                    previous_status="pending",
+                    new_status="rejected",
+                    changed_by_administrator_id=actor.id,
+                    change_source="administrator",
+                )
+            )
+    except (IntegrityError, SQLAlchemyError, _AppointmentActionError) as error:
+        _show_appointment_action_error(error)
+        return redirect(url_for("admin.appointment_detail", appointment_id=appointment_id))
+
+    flash("La solicitud fue rechazada.", "success")
+    return redirect(url_for("admin.appointment_detail", appointment_id=appointment_id))
 
 
 @admin_bp.post("/logout")

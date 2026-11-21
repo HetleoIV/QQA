@@ -265,7 +265,7 @@ def test_migracion_permite_solicitudes_no_asignadas_y_preserva_datos_relacionado
         assert columns["professional_id"] == 0
         assert columns["availability_slot_id"] == 0
         assert connection.execute("SELECT version_num FROM alembic_version").fetchone()[0] == (
-            "b64ac30f76d1"
+            "c2a8e6149f30"
         )
         assert connection.execute(
             "SELECT availability_slot_id, professional_id, service_id, contact_email, "
@@ -334,7 +334,7 @@ def test_migracion_permite_solicitudes_no_asignadas_y_preserva_datos_relacionado
     )
     with sqlite3.connect(database_file) as connection:
         assert connection.execute("SELECT version_num FROM alembic_version").fetchone()[0] == (
-            "b64ac30f76d1"
+            "c2a8e6149f30"
         )
         assert connection.execute(
             "SELECT COUNT(*) FROM appointments WHERE professional_id IS NULL"
@@ -405,7 +405,7 @@ def test_fallo_intermedio_revierte_ddl_y_permite_reintentar(tmp_path):
     with sqlite3.connect(database_file) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone()[0] == "b64ac30f76d1"
+        ).fetchone()[0] == "c2a8e6149f30"
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
 
 

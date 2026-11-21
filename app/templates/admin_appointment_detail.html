@@ -1,0 +1,43 @@
+{% extends "admin_base.html" %}
+{% block title %}Solicitud {{ appointment.id }} · Q.A.A.{% endblock %}
+{% block admin_content %}
+  <section class="admin-users-page" aria-labelledby="appointment-detail-title">
+    <p class="admin-dashboard-eyebrow"><a class="admin-users-text-link" href="{{ url_for('admin.appointments') }}">Solicitudes</a> / Detalle</p>
+    <header class="admin-users-header"><div><h1 id="appointment-detail-title">Solicitud de cita</h1><p class="admin-dashboard-subtitle">Revisa la información y registra una decisión administrativa.</p></div><a class="admin-users-cancel" href="{{ url_for('admin.appointments') }}">Volver al listado</a></header>
+    <article class="admin-users-panel admin-users-detail-card">
+      <dl>
+        <div><dt>Solicitante</dt><dd>{{ appointment.contact_name }}</dd></div>
+        <div><dt>Correo</dt><dd>{{ appointment.contact_email }}</dd></div>
+        <div><dt>Teléfono</dt><dd>{{ appointment.contact_phone or 'No indicado' }}</dd></div>
+        <div><dt>Servicio</dt><dd>{{ appointment.service.name }}</dd></div>
+        <div><dt>Modalidad</dt><dd>{{ modality_labels.get(appointment.modality, appointment.modality) }}</dd></div>
+        <div><dt>Estado</dt><dd><span class="admin-users-state{% if appointment.status not in ('pending', 'confirmed') %} is-inactive{% endif %}">{{ status_labels.get(appointment.status, appointment.status) }}</span></dd></div>
+        {% if appointment.professional %}<div><dt>Profesional</dt><dd>{{ appointment.professional.full_name }}</dd></div>{% endif %}
+        {% if appointment.availability_slot %}<div><dt>Fecha y hora</dt><dd><time datetime="{{ appointment.availability_slot.starts_at.isoformat() }}">{{ appointment.availability_slot.starts_at.strftime('%d/%m/%Y %H:%M') }}</time></dd></div>{% endif %}
+      </dl>
+    </article>
+
+    {% if appointment.status == 'pending' %}
+      <section class="admin-users-panel admin-appointment-actions-panel" aria-labelledby="assign-title">
+        <h2 id="assign-title">Asignar y confirmar</h2>
+        <p class="admin-dashboard-subtitle">La cita ocupará una hora y solo podrás elegir profesionales activos del servicio solicitado.</p>
+        {% if professionals %}
+          <form class="admin-users-form" method="post" action="{{ url_for('admin.assign_appointment', appointment_id=appointment.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <label for="professional_id">Profesional</label><select id="professional_id" name="professional_id" required><option value="">Selecciona un profesional</option>{% for professional in professionals %}<option value="{{ professional.id }}">{{ professional.full_name }}</option>{% endfor %}</select>
+            <label for="date">Fecha de atención</label><input id="date" name="date" type="date" required>
+            <label for="time">Hora de inicio</label><input id="time" name="time" type="time" step="60" required>
+            <div class="admin-users-form-actions"><button class="admin-users-button" type="submit">Asignar y confirmar</button></div>
+          </form>
+        {% else %}<p class="admin-users-warning">No hay profesionales activos asociados con este servicio.</p>{% endif %}
+        <form method="post" action="{{ url_for('admin.reject_appointment', appointment_id=appointment.id) }}" class="admin-users-actions">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button class="admin-users-danger-link" type="submit">Rechazar solicitud</button>
+        </form>
+      </section>
+    {% endif %}
+
+    {% if appointment.status_history %}
+      <section class="admin-users-panel admin-appointment-history" aria-labelledby="history-title"><h2 id="history-title">Historial de estado</h2><ul>{% for change in appointment.status_history %}<li><strong>{{ status_labels.get(change.new_status, change.new_status) }}</strong><span>{{ change.change_source }} · <time datetime="{{ change.changed_at.isoformat() }}">{{ change.changed_at.strftime('%d/%m/%Y %H:%M') }}</time></span></li>{% endfor %}</ul></section>
+    {% endif %}
+  </section>
+{% endblock %}

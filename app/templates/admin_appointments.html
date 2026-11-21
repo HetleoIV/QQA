@@ -30,12 +30,13 @@
                 <th scope="col">Contacto</th>
                 <th scope="col">Registro</th>
                 <th scope="col">Estado</th>
+                <th scope="col"><span class="admin-users-visually-hidden">Acción</span></th>
               </tr>
             </thead>
             <tbody>
               {% for appointment in pagination.items %}
                 <tr>
-                  <td data-label="Solicitante">{{ appointment.contact_name }}</td>
+                  <td data-label="Solicitante"><a href="{{ url_for('admin.appointment_detail', appointment_id=appointment.id) }}">{{ appointment.contact_name }}</a></td>
                   <td data-label="Servicio">{{ appointment.service.name }}</td>
                   <td data-label="Modalidad">{{ modality_labels.get(appointment.modality, appointment.modality) }}</td>
                   <td data-label="Contacto">
@@ -45,6 +46,7 @@
                   {% set requested_at = requested_at_by_id[appointment.id] %}
                   <td data-label="Registro"><time datetime="{{ requested_at.isoformat() }}">{{ requested_at.strftime('%d/%m/%Y %H:%M') }}</time></td>
                   <td data-label="Estado"><span class="admin-users-state{% if appointment.status not in ('pending', 'confirmed') %} is-inactive{% endif %}">{{ status_labels.get(appointment.status, appointment.status) }}</span></td>
+                  <td data-label="Acción"><a class="admin-users-text-link" href="{{ url_for('admin.appointment_detail', appointment_id=appointment.id) }}">Ver solicitud</a></td>
                 </tr>
               {% endfor %}
             </tbody>

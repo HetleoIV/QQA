@@ -133,10 +133,18 @@ class Professional(db.Model):
         CheckConstraint(
             "length(trim(full_name)) > 0", name="ck_professionals_full_name_not_empty"
         ),
+        Index(
+            "uq_professionals_email_ci",
+            text("lower(email)"),
+            unique=True,
+            sqlite_where=text("email IS NOT NULL"),
+            postgresql_where=text("email IS NOT NULL"),
+        ),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     full_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    email: Mapped[str | None] = mapped_column(String(254), nullable=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     photo_path: Mapped[str | None] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(
