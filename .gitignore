@@ -11,3 +11,6 @@ __pycache__/
 .pytest_cache/
 htmlcov/
 .coverage
+
+# Datos locales de Flask
+instance/
