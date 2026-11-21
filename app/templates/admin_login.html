@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Acceso administrativo · Q.A.A.{% endblock %}
+{% block title %}Acceso al equipo · Q.A.A.{% endblock %}
 
 {% block content %}
   <section class="section admin-auth-section" aria-labelledby="admin-login-title">
     <div class="wrap admin-auth-wrap">
-      <p class="eyebrow">Q.A.A. · Administración</p>
-      <h1 id="admin-login-title">Acceso administrativo</h1>
-      <p class="admin-auth-intro">Ingresa con la cuenta administrativa autorizada.</p>
+      <p class="eyebrow">Q.A.A. · Equipo</p>
+      <h1 id="admin-login-title">Acceso al equipo</h1>
+      <p class="admin-auth-intro">Ingresa con la cuenta que te asignó la administración.</p>
 
       <div class="admin-auth-panel">
         {% for category, message in get_flashed_messages(with_categories=true) %}

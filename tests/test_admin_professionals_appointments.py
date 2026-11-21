@@ -428,7 +428,7 @@ def test_migracion_agrega_correo_nullable_sin_perder_profesionales(tmp_path):
     with sqlite3.connect(database_file) as connection:
         assert connection.execute("SELECT COUNT(*) FROM professionals").fetchone()[0] == 1
         assert connection.execute("SELECT email FROM professionals").fetchone()[0] is None
-        assert connection.execute("SELECT version_num FROM alembic_version").fetchone()[0] == "c2a8e6149f30"
+        assert connection.execute("SELECT version_num FROM alembic_version").fetchone()[0] == "e18ccf6b4a21"
         connection.execute(
             "UPDATE professionals SET email='contact@example.test' WHERE full_name=?",
             ("Perfil anterior",),

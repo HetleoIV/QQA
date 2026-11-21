@@ -1,0 +1,21 @@
+{% extends "psychologist_base.html" %}
+{% block title %}Mis citas · Q.A.A.{% endblock %}
+{% block psychologist_content %}
+  <section class="admin-users-page" aria-labelledby="psychologist-appointments-title">
+    <header class="admin-users-header"><div><p class="admin-dashboard-eyebrow">Agenda personal</p><h1 id="psychologist-appointments-title">Mis citas</h1><p class="admin-dashboard-subtitle">Consulta las citas vinculadas a tu perfil profesional.</p></div></header>
+    <div class="admin-users-panel">
+      <div class="admin-users-panel-heading"><div><h2>Citas asignadas</h2><p>Los datos personales del paciente se muestran de forma limitada.</p></div><span class="admin-users-count">{{ appointments|length }} citas</span></div>
+      {% if appointments %}
+        <div class="admin-users-table-wrap"><table class="admin-users-table"><thead><tr><th scope="col">Paciente</th><th scope="col">Servicio</th><th scope="col">Fecha y hora</th><th scope="col">Modalidad</th><th scope="col">Estado</th></tr></thead><tbody>
+          {% for appointment in appointments %}<tr>
+            <td data-label="Paciente">{{ appointment.patient }}</td>
+            <td data-label="Servicio">{{ appointment.service }}</td>
+            <td data-label="Fecha y hora">{% if appointment.starts_at %}<time datetime="{{ appointment.starts_at.isoformat() }}">{{ appointment.starts_at.strftime('%d/%m/%Y %H:%M') }}</time>{% else %}Sin horario registrado{% endif %}</td>
+            <td data-label="Modalidad">{{ appointment.modality }}</td>
+            <td data-label="Estado"><span class="admin-users-state{% if appointment.status_key != 'confirmed' %} is-inactive{% endif %}">{{ appointment.status }}</span></td>
+          </tr>{% endfor %}
+        </tbody></table></div>
+      {% else %}<p class="admin-users-empty">No tienes citas asignadas.</p>{% endif %}
+    </div>
+  </section>
+{% endblock %}

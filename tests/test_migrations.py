@@ -265,7 +265,7 @@ def test_migracion_permite_solicitudes_no_asignadas_y_preserva_datos_relacionado
         assert columns["professional_id"] == 0
         assert columns["availability_slot_id"] == 0
         assert connection.execute("SELECT version_num FROM alembic_version").fetchone()[0] == (
-            "c2a8e6149f30"
+            "e18ccf6b4a21"
         )
         assert connection.execute(
             "SELECT availability_slot_id, professional_id, service_id, contact_email, "
@@ -334,7 +334,7 @@ def test_migracion_permite_solicitudes_no_asignadas_y_preserva_datos_relacionado
     )
     with sqlite3.connect(database_file) as connection:
         assert connection.execute("SELECT version_num FROM alembic_version").fetchone()[0] == (
-            "c2a8e6149f30"
+            "e18ccf6b4a21"
         )
         assert connection.execute(
             "SELECT COUNT(*) FROM appointments WHERE professional_id IS NULL"
@@ -405,7 +405,151 @@ def test_fallo_intermedio_revierte_ddl_y_permite_reintentar(tmp_path):
     with sqlite3.connect(database_file) as connection:
         assert connection.execute(
             "SELECT version_num FROM alembic_version"
-        ).fetchone()[0] == "c2a8e6149f30"
+        ).fetchone()[0] == "e18ccf6b4a21"
+        assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+
+
+def test_migracion_roles_y_nombres_conserva_cuentas_y_contact_name_historicos(tmp_path):
+    database_file = tmp_path / "qaa-roles-patient-names.sqlite3"
+    environment = os.environ.copy()
+    environment["DATABASE_URL"] = f"sqlite:///{database_file.as_posix()}"
+    environment["FLASK_DEBUG"] = "false"
+    baseline = subprocess.run(
+        [
+            sys.executable, "-m", "flask", "--app", "run.py", "db", "upgrade",
+            "c2a8e6149f30",
+        ],
+        cwd=PROJECT_ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert baseline.returncode == 0, baseline.stdout + baseline.stderr
+    with sqlite3.connect(database_file) as connection:
+        connection.execute(
+            "INSERT INTO administrators (email, password_hash) VALUES (?, ?)",
+            ("admin@qqa", "existing-hash-preserved"),
+        )
+        connection.execute(
+            "INSERT INTO appointments "
+            "(service_id, modality, contact_name, contact_email, public_ticket_hash, status) "
+            "VALUES (1, 'virtual', ?, ?, ?, 'pending')",
+            ("María Fernanda González Pérez", "person@example.test", "a" * 64),
+        )
+    upgrade = subprocess.run(
+        [sys.executable, "-m", "flask", "--app", "run.py", "db", "upgrade"],
+        cwd=PROJECT_ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert upgrade.returncode == 0, upgrade.stdout + upgrade.stderr
+    with sqlite3.connect(database_file) as connection:
+        account = connection.execute(
+            "SELECT email, password_hash, role, professional_id FROM administrators"
+        ).fetchone()
+        appointment = connection.execute(
+            "SELECT contact_name, first_name, second_name, first_surname, second_surname "
+            "FROM appointments"
+        ).fetchone()
+        assert account == ("admin@qqa", "existing-hash-preserved", "admin", None)
+        assert appointment == ("María Fernanda González Pérez", None, None, None, None)
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchone()[0] == "e18ccf6b4a21"
+        assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
+
+
+def test_downgrade_roles_se_detiene_sin_eliminar_permisos_ni_nombres(tmp_path):
+    database_file = tmp_path / "qaa-safe-roles-downgrade.sqlite3"
+    environment = os.environ.copy()
+    environment["DATABASE_URL"] = f"sqlite:///{database_file.as_posix()}"
+    environment["FLASK_DEBUG"] = "false"
+    baseline = subprocess.run(
+        [
+            sys.executable, "-m", "flask", "--app", "run.py", "db", "upgrade",
+            "c2a8e6149f30",
+        ],
+        cwd=PROJECT_ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert baseline.returncode == 0, baseline.stdout + baseline.stderr
+    with sqlite3.connect(database_file) as connection:
+        connection.execute(
+            "INSERT INTO professionals (id, full_name) VALUES (1, 'Profesional ficticio')"
+        )
+        connection.execute(
+            "INSERT INTO professional_services (professional_id, service_id) VALUES (1, 1)"
+        )
+    upgrade = subprocess.run(
+        [sys.executable, "-m", "flask", "--app", "run.py", "db", "upgrade"],
+        cwd=PROJECT_ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert upgrade.returncode == 0, upgrade.stdout + upgrade.stderr
+    with sqlite3.connect(database_file) as connection:
+        connection.execute(
+            "INSERT INTO administrators (email, password_hash, role, professional_id) "
+            "VALUES ('psychologist@example.test', 'hash', 'psychologist', 1)"
+        )
+        connection.execute(
+            "INSERT INTO appointments "
+            "(service_id, modality, contact_name, first_name, first_surname, second_surname, "
+            "contact_email, public_ticket_hash, status) "
+            "VALUES (1, 'virtual', 'Ana Ruiz Vega', 'Ana', 'Ruiz', 'Vega', ?, ?, 'pending')",
+            ("person@example.test", "b" * 64),
+        )
+
+    account_downgrade = subprocess.run(
+        [
+            sys.executable, "-m", "flask", "--app", "run.py", "db", "downgrade",
+            "c2a8e6149f30",
+        ],
+        cwd=PROJECT_ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert account_downgrade.returncode != 0
+    assert "existen cuentas de psicólogos" in (
+        account_downgrade.stdout + account_downgrade.stderr
+    )
+    with sqlite3.connect(database_file) as connection:
+        connection.execute(
+            "UPDATE administrators SET role='admin', professional_id=NULL"
+        )
+
+    patient_downgrade = subprocess.run(
+        [
+            sys.executable, "-m", "flask", "--app", "run.py", "db", "downgrade",
+            "c2a8e6149f30",
+        ],
+        cwd=PROJECT_ROOT,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert patient_downgrade.returncode != 0
+    assert "existen nombres estructurados" in (
+        patient_downgrade.stdout + patient_downgrade.stderr
+    )
+    with sqlite3.connect(database_file) as connection:
+        assert connection.execute(
+            "SELECT version_num FROM alembic_version"
+        ).fetchone()[0] == "e18ccf6b4a21"
+        assert connection.execute(
+            "SELECT first_name, first_surname, second_surname FROM appointments"
+        ).fetchone() == ("Ana", "Ruiz", "Vega")
         assert connection.execute("PRAGMA foreign_key_check").fetchall() == []
 
 

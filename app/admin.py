@@ -115,7 +115,9 @@ def _administrator_write_transaction(actor_id: int):
 
 def _active_administrator_count() -> int:
     return db.session.scalar(
-        select(func.count(Administrator.id)).where(Administrator.is_active.is_(True))
+        select(func.count(Administrator.id)).where(
+            Administrator.is_active.is_(True), Administrator.role == "admin"
+        )
     ) or 0
 
 
@@ -235,6 +237,8 @@ def admin_required(view):
         if administrator is None or not administrator.is_active:
             session.clear()
             return redirect(url_for("admin.login"))
+        if administrator.role != "admin":
+            abort(403)
 
         g.administrator = administrator
         return view(*args, **kwargs)
@@ -276,6 +280,8 @@ def login():
         session.permanent = True
         session[_ADMINISTRATOR_SESSION_KEY] = administrator.id
         session[_CSRF_SESSION_KEY] = secrets.token_urlsafe(32)
+        if administrator.role == "psychologist":
+            return redirect(url_for("psychologist.appointments"))
         return redirect(url_for("admin.dashboard"))
 
     return render_template("admin_login.html", csrf_token=_csrf_token())
@@ -472,7 +478,6 @@ def create_professional():
             )
             db.session.add(professional)
             db.session.flush()
-            professional_id = professional.id
     except (IntegrityError, SQLAlchemyError, _ProfessionalActionError) as error:
         _show_professional_action_error(error)
         return _render_professional_form(
@@ -480,7 +485,7 @@ def create_professional():
         )
 
     flash("El profesional fue registrado.", "success")
-    return redirect(url_for("admin.edit_professional", professional_id=professional_id))
+    return redirect(url_for("admin.professionals"))
 
 
 @admin_bp.route("/professionals/<int:professional_id>/edit", methods=["GET", "POST"])
@@ -790,7 +795,9 @@ def logout():
 @admin_required
 def users():
     administrators = db.session.scalars(
-        select(Administrator).order_by(Administrator.created_at.desc(), Administrator.id)
+        select(Administrator)
+        .options(joinedload(Administrator.professional))
+        .order_by(Administrator.created_at.desc(), Administrator.id)
     ).all()
     return render_template(
         "admin_users.html", administrators=administrators, csrf_token=_csrf_token()
@@ -800,22 +807,29 @@ def users():
 @admin_bp.route("/users/new", methods=["GET", "POST"])
 @admin_required
 def create_user():
+    available_professionals = db.session.scalars(
+        select(Professional)
+        .where(Professional.is_active.is_(True), ~Professional.account.has())
+        .order_by(Professional.full_name)
+    ).all()
     if request.method == "POST":
         if not _valid_csrf_token():
             _csrf_failure()
 
         email = request.form.get("email", "").strip().lower()
+        role = request.form.get("role", "admin")
+        professional_value = request.form.get("professional_id", "").strip()
         password = request.form.get("password", "")
         password_confirmation = request.form.get("password_confirmation", "")
         validation_error = None
-        if (
-            len(email) > 254
-            or email.count("@") != 1
-            or any(character.isspace() for character in email)
-            or not email.split("@", 1)[0]
-            or not email.split("@", 1)[1]
-        ):
+        if not _valid_email(email):
             validation_error = "Ingresa un correo electrónico válido."
+        elif role not in {"admin", "psychologist"}:
+            validation_error = "Selecciona un rol válido."
+        elif role == "admin" and professional_value:
+            validation_error = "Una cuenta administradora no se vincula a un perfil profesional."
+        elif role == "psychologist" and not professional_value:
+            validation_error = "Selecciona el perfil profesional de esta cuenta."
         elif len(password) < 12:
             validation_error = "La contraseña debe tener al menos 12 caracteres."
         elif password != password_confirmation:
@@ -824,7 +838,21 @@ def create_user():
         if validation_error:
             flash(validation_error, "error")
             return render_template(
-                "admin_user_form.html", csrf_token=_csrf_token(), email=email
+                "admin_user_form.html", csrf_token=_csrf_token(), email=email,
+                role=role, professionals=available_professionals,
+            ), 400
+
+        professional_id = None
+        if role == "psychologist":
+            try:
+                professional_id = int(professional_value)
+            except ValueError:
+                validation_error = "Selecciona un perfil profesional válido."
+        if validation_error:
+            flash(validation_error, "error")
+            return render_template(
+                "admin_user_form.html", csrf_token=_csrf_token(), email=email,
+                role=role, professionals=available_professionals,
             ), 400
 
         try:
@@ -834,22 +862,50 @@ def create_user():
                 )
                 if duplicate is not None:
                     raise _AccountActionError("Ya existe una cuenta con ese correo electrónico.")
+                professional = None
+                if role == "psychologist":
+                    professional = db.session.scalar(
+                        select(Professional)
+                        .where(
+                            Professional.id == professional_id,
+                            Professional.is_active.is_(True),
+                            ~Professional.account.has(),
+                        )
+                        .with_for_update()
+                    )
+                    if professional is None:
+                        raise _AccountActionError(
+                            "El perfil ya tiene una cuenta o dejó de estar activo."
+                        )
                 administrator = Administrator(
                     email=email,
                     password_hash=generate_password_hash(password),
                     is_active=True,
+                    role=role,
+                    professional=professional,
                 )
                 db.session.add(administrator)
                 db.session.flush()
                 new_id = administrator.id
         except (IntegrityError, SQLAlchemyError, _AccountActionError) as error:
             _show_account_action_error(error)
-            return render_template("admin_user_form.html", csrf_token=_csrf_token(), email=email), 400
+            available_professionals = db.session.scalars(
+                select(Professional)
+                .where(Professional.is_active.is_(True), ~Professional.account.has())
+                .order_by(Professional.full_name)
+            ).all()
+            return render_template(
+                "admin_user_form.html", csrf_token=_csrf_token(), email=email,
+                role=role, professionals=available_professionals,
+            ), 400
 
         flash("La cuenta administrativa fue creada.", "success")
         return redirect(url_for("admin.user_detail", administrator_id=new_id))
 
-    return render_template("admin_user_form.html", csrf_token=_csrf_token(), email="")
+    return render_template(
+        "admin_user_form.html", csrf_token=_csrf_token(), email="", role="admin",
+        professionals=available_professionals,
+    )
 
 
 @admin_bp.get("/users/<int:administrator_id>")
@@ -911,7 +967,11 @@ def deactivate_user(administrator_id: int):
             )
             if administrator is None:
                 raise _AccountActionError("La cuenta indicada no existe.")
-            if administrator.is_active and _active_administrator_count() <= 1:
+            if (
+                administrator.role == "admin"
+                and administrator.is_active
+                and _active_administrator_count() <= 1
+            ):
                 raise _AccountActionError("No puedes desactivar la última cuenta activa.")
             administrator.is_active = False
     except (IntegrityError, SQLAlchemyError, _AccountActionError) as error:
@@ -927,6 +987,8 @@ def confirm_delete_user(administrator_id: int):
     administrator = db.session.get(Administrator, administrator_id)
     if administrator is None:
         abort(404)
+    if administrator.role != "admin":
+        abort(403)
     has_history = db.session.scalar(
         select(AppointmentStatusHistory.id)
         .where(AppointmentStatusHistory.changed_by_administrator_id == administrator_id)
@@ -962,6 +1024,10 @@ def delete_user(administrator_id: int):
             )
             if administrator is None:
                 raise _AccountActionError("La cuenta indicada no existe.")
+            if administrator.role != "admin":
+                raise _AccountActionError(
+                    "Las cuentas de psicólogos se desactivan para conservar el vínculo profesional."
+                )
             if administrator.is_active and _active_administrator_count() <= 1:
                 raise _AccountActionError("No puedes eliminar la última cuenta activa.")
             has_history = db.session.scalar(

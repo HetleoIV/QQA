@@ -68,7 +68,7 @@ professional_services = db.Table(
 
 
 class Administrator(db.Model):
-    """Cuenta del único tipo de usuario administrativo del sistema."""
+    """Cuenta de acceso para administradores y psicólogos."""
 
     __tablename__ = "administrators"
     __table_args__ = (
@@ -76,6 +76,21 @@ class Administrator(db.Model):
         CheckConstraint(
             "length(trim(password_hash)) > 0",
             name="ck_administrators_password_hash_not_empty",
+        ),
+        CheckConstraint(
+            "(role = 'admin' AND professional_id IS NULL) OR "
+            "(role = 'psychologist' AND professional_id IS NOT NULL)",
+            name="ck_administrators_role_professional_link",
+        ),
+        CheckConstraint(
+            "role IN ('admin', 'psychologist')", name="ck_administrators_role_allowed"
+        ),
+        Index(
+            "uq_administrators_professional_id",
+            "professional_id",
+            unique=True,
+            sqlite_where=text("professional_id IS NOT NULL"),
+            postgresql_where=text("professional_id IS NOT NULL"),
         ),
     )
 
@@ -85,6 +100,12 @@ class Administrator(db.Model):
     is_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default=true()
     )
+    role: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="admin", server_default=text("'admin'")
+    )
+    professional_id: Mapped[int | None] = mapped_column(
+        ForeignKey("professionals.id", ondelete="RESTRICT"), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -92,6 +113,9 @@ class Administrator(db.Model):
     status_changes: Mapped[list[AppointmentStatusHistory]] = relationship(
         back_populates="changed_by_administrator",
         foreign_keys="AppointmentStatusHistory.changed_by_administrator_id",
+    )
+    professional: Mapped[Professional | None] = relationship(
+        back_populates="account", foreign_keys=[professional_id], uselist=False
     )
 
 
@@ -162,6 +186,10 @@ class Professional(db.Model):
     )
     appointments: Mapped[list[Appointment]] = relationship(
         back_populates="professional", foreign_keys="Appointment.professional_id"
+    )
+    account: Mapped[Administrator | None] = relationship(
+        back_populates="professional", foreign_keys="Administrator.professional_id",
+        uselist=False,
     )
 
 
@@ -276,6 +304,10 @@ class Appointment(db.Model):
     )
     modality: Mapped[str] = mapped_column(String(20), nullable=False)
     contact_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    first_name: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    second_name: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    first_surname: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    second_surname: Mapped[str | None] = mapped_column(String(80), nullable=True)
     contact_email: Mapped[str] = mapped_column(String(254), nullable=False)
     contact_phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
     public_ticket_hash: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)

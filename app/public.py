@@ -75,7 +75,10 @@ def inicio():
     form_data = {
         "service": request.form.get("service", ""),
         "modality": request.form.get("modality", ""),
-        "name": request.form.get("name", ""),
+        "first_name": request.form.get("first_name", ""),
+        "second_name": request.form.get("second_name", ""),
+        "first_surname": request.form.get("first_surname", ""),
+        "second_surname": request.form.get("second_surname", ""),
         "email": request.form.get("email", ""),
         "phone": request.form.get("phone", ""),
         "consent": request.form.get("consent", ""),
@@ -131,11 +134,24 @@ def inicio():
                 if modality not in APPOINTMENT_MODALITIES:
                     errors["modality"] = "Selecciona una modalidad válida."
 
-                contact_name = form_data["name"].strip()
-                if not contact_name:
-                    errors["name"] = "Escribe tu nombre completo."
-                elif len(contact_name) > 120:
-                    errors["name"] = "El nombre no puede superar 120 caracteres."
+                name_parts = {
+                    key: " ".join(form_data[key].split())
+                    for key in ("first_name", "second_name", "first_surname", "second_surname")
+                }
+                for key, label in (
+                    ("first_name", "primer nombre"),
+                    ("first_surname", "primer apellido"),
+                    ("second_surname", "segundo apellido"),
+                ):
+                    if not name_parts[key]:
+                        errors[key] = f"Escribe el {label}."
+                    elif len(name_parts[key]) > 80:
+                        errors[key] = "Cada componente debe tener como máximo 80 caracteres."
+                if name_parts["second_name"] and len(name_parts["second_name"]) > 80:
+                    errors["second_name"] = "El segundo nombre no puede superar 80 caracteres."
+                contact_name = " ".join(part for part in name_parts.values() if part)
+                if len(contact_name) > 120:
+                    errors["first_name"] = "El nombre completo no puede superar 120 caracteres."
 
                 contact_email = form_data["email"].strip()
                 if not contact_email:
@@ -166,6 +182,10 @@ def inicio():
                             service_id=service.id,
                             modality=modality,
                             contact_name=contact_name,
+                            first_name=name_parts["first_name"],
+                            second_name=name_parts["second_name"] or None,
+                            first_surname=name_parts["first_surname"],
+                            second_surname=name_parts["second_surname"],
                             contact_email=contact_email,
                             contact_phone=contact_phone,
                             public_ticket_hash=ticket_hash,

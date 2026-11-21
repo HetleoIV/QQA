@@ -3,14 +3,14 @@
 {% block admin_content %}
   <section class="admin-users-page" aria-labelledby="users-title">
     <header class="admin-users-header">
-      <div><p class="admin-dashboard-eyebrow">Administración de acceso</p><h1 id="users-title">Usuarios</h1><p class="admin-dashboard-subtitle">Cuentas administrativas con acceso al panel.</p></div>
+      <div><p class="admin-dashboard-eyebrow">Administración de acceso</p><h1 id="users-title">Usuarios</h1><p class="admin-dashboard-subtitle">Cuentas individuales para administradores y psicólogos.</p></div>
       <a class="admin-users-button" href="{{ url_for('admin.create_user') }}">Crear usuario</a>
     </header>
     <div class="admin-users-panel">
-      <div class="admin-users-panel-heading"><div><h2>Cuentas administrativas</h2><p>Las cuentas inactivas no pueden iniciar sesión.</p></div><span class="admin-users-count">{{ administrators|length }} cuentas</span></div>
+      <div class="admin-users-panel-heading"><div><h2>Cuentas de acceso</h2><p>Las cuentas inactivas no pueden iniciar sesión.</p></div><span class="admin-users-count">{{ administrators|length }} cuentas</span></div>
       {% if administrators %}
-        <div class="admin-users-table-wrap"><table class="admin-users-table"><thead><tr><th scope="col">Correo electrónico</th><th scope="col">Estado</th><th scope="col">Creación</th><th scope="col"><span class="admin-users-visually-hidden">Acciones</span></th></tr></thead><tbody>
-          {% for administrator in administrators %}<tr><td data-label="Correo"><a href="{{ url_for('admin.user_detail', administrator_id=administrator.id) }}">{{ administrator.email }}</a>{% if administrator.id == g.administrator.id %}<span class="admin-users-self">Tu cuenta</span>{% endif %}</td><td data-label="Estado"><span class="admin-users-state{% if not administrator.is_active %} is-inactive{% endif %}">{{ 'Activa' if administrator.is_active else 'Inactiva' }}</span></td><td data-label="Creación"><time datetime="{{ administrator.created_at.isoformat() }}">{{ administrator.created_at.strftime('%d/%m/%Y') }}</time></td><td data-label="Acción"><a class="admin-users-text-link" href="{{ url_for('admin.user_detail', administrator_id=administrator.id) }}">Ver detalle</a></td></tr>{% endfor %}
+        <div class="admin-users-table-wrap"><table class="admin-users-table"><thead><tr><th scope="col">Correo electrónico</th><th scope="col">Rol</th><th scope="col">Perfil profesional</th><th scope="col">Estado</th><th scope="col">Creación</th><th scope="col"><span class="admin-users-visually-hidden">Acciones</span></th></tr></thead><tbody>
+          {% for administrator in administrators %}<tr><td data-label="Correo"><a href="{{ url_for('admin.user_detail', administrator_id=administrator.id) }}">{{ administrator.email }}</a>{% if administrator.id == g.administrator.id %}<span class="admin-users-self">Tu cuenta</span>{% endif %}</td><td data-label="Rol">{{ 'Psicólogo' if administrator.role == 'psychologist' else 'Administrador' }}</td><td data-label="Perfil profesional">{{ administrator.professional.full_name if administrator.professional else '—' }}</td><td data-label="Estado"><span class="admin-users-state{% if not administrator.is_active %} is-inactive{% endif %}">{{ 'Activa' if administrator.is_active else 'Inactiva' }}</span></td><td data-label="Creación"><time datetime="{{ administrator.created_at.isoformat() }}">{{ administrator.created_at.strftime('%d/%m/%Y') }}</time></td><td data-label="Acción"><a class="admin-users-text-link" href="{{ url_for('admin.user_detail', administrator_id=administrator.id) }}">Ver detalle</a></td></tr>{% endfor %}
         </tbody></table></div>
       {% else %}<p class="admin-users-empty">No hay cuentas para mostrar.</p>{% endif %}
     </div>

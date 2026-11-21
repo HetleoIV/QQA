@@ -7,7 +7,7 @@
     <form class="admin-users-form admin-users-panel" method="post" action="{{ url_for('admin.edit_professional', professional_id=professional.id) if professional else url_for('admin.create_professional') }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
       <label for="full_name">Nombre completo</label><input id="full_name" name="full_name" type="text" maxlength="120" autocomplete="name" value="{{ professional.full_name if professional else '' }}" required>
-      <label for="email">Correo electrónico</label><input id="email" name="email" type="email" maxlength="254" autocomplete="email" value="{{ professional.email if professional and professional.email else '' }}" required>
+      <label for="email">Correo institucional o de contacto</label><input id="email" name="email" type="email" maxlength="254" autocomplete="email" value="{{ professional.email if professional and professional.email else '' }}" required>
       <fieldset class="admin-professional-services"><legend>Servicios</legend>
         {% for service in services %}<label class="admin-professional-service-option"><input type="checkbox" name="service_ids" value="{{ service.id }}"{% if service.id in selected_service_ids %} checked{% endif %}{% if not service.is_active and service.id not in selected_service_ids %} disabled{% endif %}><span>{{ service.name }}{% if not service.is_active %} (inactivo){% endif %}</span></label>{% endfor %}
       </fieldset>

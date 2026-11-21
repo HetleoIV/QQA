@@ -65,7 +65,10 @@ def _valid_form(client, service_id, **changes):
         "csrf_token": _csrf_token(client),
         "service": str(service_id),
         "modality": "virtual",
-        "name": "Persona de prueba",
+        "first_name": "Persona",
+        "second_name": "",
+        "first_surname": "de",
+        "second_surname": "prueba",
         "email": "persona@example.test",
         "phone": "+51 900 123 456",
         "consent": "yes",
@@ -154,6 +157,10 @@ def test_solicitud_valida_guarda_cita_pendiente_sin_asignacion_y_muestra_ticket(
         assert appointment.service_id == service_id
         assert appointment.modality == "virtual"
         assert appointment.contact_name == "Persona de prueba"
+        assert appointment.first_name == "Persona"
+        assert appointment.second_name is None
+        assert appointment.first_surname == "de"
+        assert appointment.second_surname == "prueba"
         assert appointment.contact_email == "persona@example.test"
         assert appointment.contact_phone == "+51 900 123 456"
         assert appointment.status == "pending"
@@ -171,7 +178,9 @@ def test_solicitud_valida_guarda_cita_pendiente_sin_asignacion_y_muestra_ticket(
     [
         ("service", "service-error"),
         ("modality", "modality-error"),
-        ("name", "name-error"),
+        ("first_name", "first-name-error"),
+        ("first_surname", "first-surname-error"),
+        ("second_surname", "second-surname-error"),
         ("email", "email-error"),
         ("phone", "phone-error"),
         ("consent", "consent-error"),
@@ -190,6 +199,18 @@ def test_campos_obligatorios_se_validan_en_el_servidor(
     assert f'id="{error_id}"' in response.get_data(as_text=True)
     with public_app.app_context():
         assert db.session.query(Appointment).count() == 0
+
+
+def test_segundo_nombre_es_opcional_y_componentes_se_conservan(public_app):
+    client = public_app.test_client()
+    form = _valid_form(client, _service_id(public_app))
+    form["second_name"] = "Fernanda"
+    response = client.post("/", data=form, follow_redirects=True)
+    assert response.status_code == 200
+    with public_app.app_context():
+        appointment = db.session.query(Appointment).one()
+        assert appointment.contact_name == "Persona Fernanda de prueba"
+        assert appointment.second_name == "Fernanda"
 
 
 @pytest.mark.parametrize("service_value", ["99999", "inactive"])
@@ -312,7 +333,9 @@ def test_csrf_ausente_se_rechaza_y_registra_cookie_ausente(public_app, caplog):
         data={
             "service": str(service_id),
             "modality": "virtual",
-            "name": "Persona de prueba",
+            "first_name": "Persona",
+            "first_surname": "de",
+            "second_surname": "prueba",
             "email": "persona@example.test",
             "phone": "+51 900 123 456",
             "consent": "yes",

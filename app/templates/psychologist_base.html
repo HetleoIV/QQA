@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es-PE">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% block title %}Mis citas · Q.A.A.{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  </head>
+  <body class="admin-dashboard-body">
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <div class="admin-dashboard-app">
+      <aside class="admin-dashboard-sidebar" aria-label="Panel profesional">
+        <a class="admin-dashboard-brand" href="{{ url_for('psychologist.appointments') }}">
+          <span class="admin-dashboard-brand-mark" aria-hidden="true">Q</span>
+          <span><strong>Q.A.A.</strong><small>Panel profesional</small></span>
+        </a>
+        <div class="admin-dashboard-nav-label">Atención</div>
+        <nav class="admin-dashboard-nav" aria-label="Navegación profesional">
+          <a class="admin-dashboard-nav-link is-active" href="{{ url_for('psychologist.appointments') }}" aria-current="page"><span>Mis citas</span></a>
+        </nav>
+        <div class="admin-dashboard-sidebar-bottom">
+          <form method="post" action="{{ url_for('psychologist.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <button class="admin-dashboard-logout" type="submit"><span>Cerrar sesión</span></button>
+          </form>
+        </div>
+      </aside>
+      <main class="admin-dashboard-main" id="contenido">
+        {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}<div class="admin-users-flashes" aria-live="polite">{% for category, message in messages %}<p class="admin-users-flash admin-users-flash-{{ category }}">{{ message }}</p>{% endfor %}</div>{% endif %}{% endwith %}
+        {% block psychologist_content %}{% endblock %}
+      </main>
+    </div>
+  </body>
+</html>

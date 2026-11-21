@@ -26,9 +26,11 @@ def create_app(test_config: dict | None = None) -> Flask:
 
     from .admin import admin_bp
     from .public import public_bp
+    from .psychologist import psychologist_bp
 
     app.register_blueprint(public_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(psychologist_bp)
 
     if os.environ.get("DATABASE_DIAGNOSTIC_TOKEN"):
         from .database_diagnostics import database_diagnostics_bp

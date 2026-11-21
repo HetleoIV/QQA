@@ -220,10 +220,29 @@
             </select>
             {% if errors.get('modality') %}<span class="field-error" id="modality-error" role="alert">{{ errors.modality }}</span>{% endif %}
           </div>
-          <div class="form-row">
-            <label for="name">Nombre completo</label>
-            <input id="name" name="name" type="text" autocomplete="name" maxlength="120" value="{{ form_data.get('name', '') }}" required{% if not csrf_token %} disabled{% endif %}{% if errors.get('name') %} aria-invalid="true" aria-describedby="name-error"{% endif %}>
-            {% if errors.get('name') %}<span class="field-error" id="name-error" role="alert">{{ errors.name }}</span>{% endif %}
+          <div class="form-pair">
+            <div class="form-row">
+              <label for="first_name">Primer nombre</label>
+              <input id="first_name" name="first_name" type="text" autocomplete="given-name" maxlength="80" value="{{ form_data.get('first_name', '') }}" required{% if not csrf_token %} disabled{% endif %}{% if errors.get('first_name') %} aria-invalid="true" aria-describedby="first-name-error"{% endif %}>
+              {% if errors.get('first_name') %}<span class="field-error" id="first-name-error" role="alert">{{ errors.first_name }}</span>{% endif %}
+            </div>
+            <div class="form-row">
+              <label for="second_name">Segundo nombre <span>(opcional)</span></label>
+              <input id="second_name" name="second_name" type="text" autocomplete="additional-name" maxlength="80" value="{{ form_data.get('second_name', '') }}"{% if not csrf_token %} disabled{% endif %}{% if errors.get('second_name') %} aria-invalid="true" aria-describedby="second-name-error"{% endif %}>
+              {% if errors.get('second_name') %}<span class="field-error" id="second-name-error" role="alert">{{ errors.second_name }}</span>{% endif %}
+            </div>
+          </div>
+          <div class="form-pair">
+            <div class="form-row">
+              <label for="first_surname">Primer apellido</label>
+              <input id="first_surname" name="first_surname" type="text" autocomplete="family-name" maxlength="80" value="{{ form_data.get('first_surname', '') }}" required{% if not csrf_token %} disabled{% endif %}{% if errors.get('first_surname') %} aria-invalid="true" aria-describedby="first-surname-error"{% endif %}>
+              {% if errors.get('first_surname') %}<span class="field-error" id="first-surname-error" role="alert">{{ errors.first_surname }}</span>{% endif %}
+            </div>
+            <div class="form-row">
+              <label for="second_surname">Segundo apellido</label>
+              <input id="second_surname" name="second_surname" type="text" autocomplete="family-name" maxlength="80" value="{{ form_data.get('second_surname', '') }}" required{% if not csrf_token %} disabled{% endif %}{% if errors.get('second_surname') %} aria-invalid="true" aria-describedby="second-surname-error"{% endif %}>
+              {% if errors.get('second_surname') %}<span class="field-error" id="second-surname-error" role="alert">{{ errors.second_surname }}</span>{% endif %}
+            </div>
           </div>
           <div class="form-pair">
             <div class="form-row">
