@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f5f1e9">
+    <meta name="theme-color" content="#142b49">
     <meta name="page-type" content="service">
     <meta name="site-kind" content="other">
-    <meta name="description" content="Propuesta académica de consultoría integral psicológica, legal y nutricional en Ica.">
-    <title>{% block title %}Q.A.A. — Consultoría Integral{% endblock %}</title>
+    <meta name="description" content="SUNQU Consultoría Integral, una propuesta académica de orientación interdisciplinaria en Ica.">
+    <title>{% block title %}SUNQU — Consultoría Integral{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
   </head>
@@ -16,8 +16,8 @@
 
     <header class="site-header">
       <div class="wrap header-inner">
-        <a class="brand" href="{{ url_for('public.inicio') }}#inicio" aria-label="Q.A.A., ir al inicio">
-          <span class="brand-name">Q.A.A.</span>
+        <a class="brand" href="{{ url_for('public.inicio') }}#inicio" aria-label="SUNQU, ir al inicio">
+          <span class="brand-name">SUNQU</span>
           <span class="brand-description">Consultoría integral</span>
         </a>
 
@@ -44,15 +44,14 @@
     <footer class="site-footer" id="cierre">
       <div class="wrap footer-main">
         <div>
-          <a class="footer-brand" href="{{ url_for('public.inicio') }}#inicio">Q.A.A.</a>
-          <p>Evaluación, Acompañamiento y Asesoría.</p>
+          <a class="footer-brand" href="{{ url_for('public.inicio') }}#inicio">SUNQU</a>
+          <p>Propuesta académica de consultoría integral.</p>
         </div>
         <a class="button button-small button-light" href="{{ url_for('admin.dashboard') }}">Acceso administrativo</a>
         <a class="footer-top" href="{{ url_for('public.inicio') }}#inicio">Volver al inicio <span aria-hidden="true">↑</span></a>
       </div>
       <div class="wrap footer-meta">
         <p>Propuesta académica. No representa un centro actualmente operativo.</p>
-        <p class="photo-credit">Fotografía referencial: <a href="https://unsplash.com/photos/DEdM9Vs6s8w" rel="noreferrer">Breather / Unsplash</a>.</p>
       </div>
     </footer>
   </body>

@@ -89,7 +89,9 @@ def test_inicio_muestra_servicios_y_formulario_publico(public_app):
 
     assert response.status_code == 200
     page = response.get_data(as_text=True)
-    assert "Q.A.A. — Tu bienestar, nuestra prioridad" in page
+    assert "SUNQU — Consultoría Integral" in page
+    assert 'src="/static/img/sunqu-logo.png"' in page
+    assert "sala-referencial.jpg" not in page
     assert "Psicología clínica" in page
     assert "Asesoría legal" in page
     assert "Servicio de prueba" in page
@@ -117,10 +119,12 @@ def test_recursos_de_la_interfaz_se_cargan(public_app):
     css_response = client.get("/static/css/styles.css")
     js_response = client.get("/static/js/main.js")
     image_response = client.get("/static/img/sala-referencial.jpg")
+    sunqu_image_response = client.get("/static/img/sunqu-logo.png")
 
     assert css_response.status_code == 200
     assert js_response.status_code == 200
     assert image_response.status_code == 200
+    assert sunqu_image_response.status_code == 200
 
 
 def test_navegacion_y_etiquetas_apuntan_a_elementos_existentes(public_app):
