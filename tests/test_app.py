@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import re
 
 import pytest
@@ -96,6 +97,15 @@ def test_inicio_muestra_servicios_y_formulario_publico(public_app):
     assert "Híbrida" in page
     assert "aviso de privacidad" in page
     assert "no confirma una cita" in page
+
+
+def test_pagina_con_token_csrf_no_se_guarda_en_cache(public_app):
+    response = public_app.test_client().get("/")
+
+    assert response.status_code == 200
+    assert response.cache_control.no_store
+    assert response.cache_control.private
+    assert "Cookie" in response.vary
 
 
 def test_recursos_de_la_interfaz_se_cargan(public_app):
@@ -259,6 +269,70 @@ def test_ticket_es_unico_y_token_de_formulario_impide_reenvio(public_app):
         appointments = db.session.query(Appointment).all()
         assert len(appointments) == 2
         assert len({item.public_ticket_hash for item in appointments}) == 2
+
+
+def test_csrf_invalido_registra_solo_indicadores_seguros(public_app, caplog):
+    client = public_app.test_client()
+    expected_token = _csrf_token(client)
+    submitted_token = "token-de-prueba-invalido"
+    caplog.set_level(logging.WARNING, logger="app.public")
+
+    response = client.post(
+        "/",
+        data=_valid_form(
+            client,
+            _service_id(public_app),
+            csrf_token=submitted_token,
+        ),
+    )
+
+    assert response.status_code == 400
+    assert "Cache-Control" in response.headers
+    record = next(
+        record for record in caplog.records
+        if "Rechazo CSRF del formulario público" in record.getMessage()
+    )
+    message = record.getMessage()
+    assert "session_cookie_present=True" in message
+    assert "expected_token_present=True" in message
+    assert "submitted_token_present=True" in message
+    assert "tokens_match=False" in message
+    assert response.cache_control.no_store
+    assert response.cache_control.private
+    assert expected_token not in message
+    assert submitted_token not in message
+
+
+def test_csrf_ausente_se_rechaza_y_registra_cookie_ausente(public_app, caplog):
+    client = public_app.test_client()
+    caplog.set_level(logging.WARNING, logger="app.public")
+    service_id = _service_id(public_app)
+    response = client.post(
+        "/",
+        data={
+            "service": str(service_id),
+            "modality": "virtual",
+            "name": "Persona de prueba",
+            "email": "persona@example.test",
+            "phone": "+51 900 123 456",
+            "consent": "yes",
+        },
+    )
+
+    assert response.status_code == 400
+    assert "form-alert" in response.get_data(as_text=True)
+    assert response.cache_control.no_store
+    record = next(
+        record for record in caplog.records
+        if "Rechazo CSRF del formulario público" in record.getMessage()
+    )
+    message = record.getMessage()
+    assert "session_cookie_present=False" in message
+    assert "expected_token_present=True" in message
+    assert "submitted_token_present=False" in message
+    assert "tokens_match=False" in message
+    with public_app.app_context():
+        assert db.session.query(Appointment).count() == 0
 
 
 def test_error_de_base_de_datos_no_expone_detalles_al_visitante(public_app):

@@ -33,6 +33,15 @@ _EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 _PHONE_PATTERN = re.compile(r"^[+()\d\s.-]{7,32}$")
 
 
+@public_bp.after_request
+def prevent_caching_session_bound_form(response):
+    """Evita almacenar HTML que contiene un token ligado a una sesión."""
+    response.cache_control.private = True
+    response.cache_control.no_store = True
+    response.vary.add("Cookie")
+    return response
+
+
 def _csrf_token() -> str:
     token = session.get(_CSRF_SESSION_KEY)
     if not isinstance(token, str):
@@ -86,9 +95,26 @@ def inicio():
             if request.method == "POST":
                 submitted_token = request.form.get("csrf_token", "")
                 expected_token = session.get(_CSRF_SESSION_KEY, "")
-                if not isinstance(expected_token, str) or not hmac.compare_digest(
-                    expected_token, submitted_token
-                ):
+                expected_token_present = isinstance(expected_token, str) and bool(
+                    expected_token
+                )
+                submitted_token_present = bool(submitted_token)
+                tokens_match = (
+                    expected_token_present
+                    and submitted_token_present
+                    and hmac.compare_digest(expected_token, submitted_token)
+                )
+                if not tokens_match:
+                    session_cookie_name = current_app.config["SESSION_COOKIE_NAME"]
+                    logger.warning(
+                        "Rechazo CSRF del formulario público "
+                        "session_cookie_present=%s expected_token_present=%s "
+                        "submitted_token_present=%s tokens_match=%s",
+                        session_cookie_name in request.cookies,
+                        expected_token_present,
+                        submitted_token_present,
+                        tokens_match,
+                    )
                     notice = "El formulario venció. Revisa los datos y vuelve a enviarlo."
                     csrf_token = secrets.token_urlsafe(32)
                     session[_CSRF_SESSION_KEY] = csrf_token
