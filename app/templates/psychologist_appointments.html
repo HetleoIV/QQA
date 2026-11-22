@@ -1,5 +1,5 @@
 {% extends "psychologist_base.html" %}
-{% block title %}Mis citas · Q.A.A.{% endblock %}
+{% block title %}Mis citas · SUNQU{% endblock %}
 {% block psychologist_content %}
   <section class="admin-users-page" aria-labelledby="psychologist-appointments-title">
     <header class="admin-users-header"><div><p class="admin-dashboard-eyebrow">Agenda personal</p><h1 id="psychologist-appointments-title">Mis citas</h1><p class="admin-dashboard-subtitle">Consulta las citas vinculadas a tu perfil profesional.</p></div></header>
@@ -12,7 +12,7 @@
             <td data-label="Servicio">{{ appointment.service }}</td>
             <td data-label="Fecha y hora">{% if appointment.starts_at %}<time datetime="{{ appointment.starts_at.isoformat() }}">{{ appointment.starts_at.strftime('%d/%m/%Y %H:%M') }}</time>{% else %}Sin horario registrado{% endif %}</td>
             <td data-label="Modalidad">{{ appointment.modality }}</td>
-            <td data-label="Estado"><span class="admin-users-state{% if appointment.status_key != 'confirmed' %} is-inactive{% endif %}">{{ appointment.status }}</span></td>
+            <td data-label="Estado"><span class="admin-users-state status-{{ appointment.status_key }}{% if appointment.status_key != 'confirmed' %} is-inactive{% endif %}">{{ appointment.status }}</span></td>
           </tr>{% endfor %}
         </tbody></table></div>
       {% else %}<p class="admin-users-empty">No tienes citas asignadas.</p>{% endif %}

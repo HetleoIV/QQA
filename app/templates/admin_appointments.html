@@ -1,5 +1,5 @@
 {% extends "admin_base.html" %}
-{% block title %}Solicitudes · Q.A.A.{% endblock %}
+{% block title %}Solicitudes · SUNQU{% endblock %}
 {% block admin_content %}
   <section class="admin-users-page" aria-labelledby="appointments-title">
     <header class="admin-users-header">
@@ -45,7 +45,7 @@
                   </td>
                   {% set requested_at = requested_at_by_id[appointment.id] %}
                   <td data-label="Registro"><time datetime="{{ requested_at.isoformat() }}">{{ requested_at.strftime('%d/%m/%Y %H:%M') }}</time></td>
-                  <td data-label="Estado"><span class="admin-users-state{% if appointment.status not in ('pending', 'confirmed') %} is-inactive{% endif %}">{{ status_labels.get(appointment.status, appointment.status) }}</span></td>
+                  <td data-label="Estado"><span class="admin-users-state status-{{ appointment.status }}{% if appointment.status not in ('pending', 'confirmed') %} is-inactive{% endif %}">{{ status_labels.get(appointment.status, appointment.status) }}</span></td>
                   <td data-label="Acción"><a class="admin-users-text-link" href="{{ url_for('admin.appointment_detail', appointment_id=appointment.id) }}">Ver solicitud</a></td>
                 </tr>
               {% endfor %}

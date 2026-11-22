@@ -1,5 +1,5 @@
 {% extends "admin_base.html" %}
-{% block title %}Solicitud {{ appointment.id }} · Q.A.A.{% endblock %}
+{% block title %}Solicitud {{ appointment.id }} · SUNQU{% endblock %}
 {% block admin_content %}
   <section class="admin-users-page" aria-labelledby="appointment-detail-title">
     <p class="admin-dashboard-eyebrow"><a class="admin-users-text-link" href="{{ url_for('admin.appointments') }}">Solicitudes</a> / Detalle</p>
@@ -11,7 +11,7 @@
         <div><dt>Teléfono</dt><dd>{{ appointment.contact_phone or 'No indicado' }}</dd></div>
         <div><dt>Servicio</dt><dd>{{ appointment.service.name }}</dd></div>
         <div><dt>Modalidad</dt><dd>{{ modality_labels.get(appointment.modality, appointment.modality) }}</dd></div>
-        <div><dt>Estado</dt><dd><span class="admin-users-state{% if appointment.status not in ('pending', 'confirmed') %} is-inactive{% endif %}">{{ status_labels.get(appointment.status, appointment.status) }}</span></dd></div>
+        <div><dt>Estado</dt><dd><span class="admin-users-state status-{{ appointment.status }}{% if appointment.status not in ('pending', 'confirmed') %} is-inactive{% endif %}">{{ status_labels.get(appointment.status, appointment.status) }}</span></dd></div>
         {% if appointment.professional %}<div><dt>Profesional</dt><dd>{{ appointment.professional.full_name }}</dd></div>{% endif %}
         {% if appointment.availability_slot %}<div><dt>Fecha y hora</dt><dd><time datetime="{{ appointment.availability_slot.starts_at.isoformat() }}">{{ appointment.availability_slot.starts_at.strftime('%d/%m/%Y %H:%M') }}</time></dd></div>{% endif %}
       </dl>
