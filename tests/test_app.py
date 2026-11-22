@@ -96,12 +96,14 @@ def test_inicio_muestra_servicios_y_formulario_publico(public_app):
     assert "Asesoría legal" in page
     assert "Servicio de prueba" in page
     assert "Servicio inactivo" not in page
-    assert 'name="modality"' in page
-    assert "Presencial" in page
+    assert '<input type="hidden" name="modality" value="virtual">' in page
+    assert '<select id="modality"' not in page
     assert "Virtual" in page
-    assert "Híbrida" in page
+    assert "Modalidad de atención" in page
+    assert "Presencial" not in page
+    assert "Híbrida" not in page
     assert "aviso de privacidad" in page
-    assert "no confirma una cita" in page
+    assert "Atención exclusivamente virtual" in page
 
 
 def test_pagina_con_token_csrf_no_se_guarda_en_cache(public_app):
@@ -151,8 +153,8 @@ def test_solicitud_valida_guarda_cita_pendiente_sin_asignacion_y_muestra_ticket(
 
     assert response.status_code == 200
     page = response.get_data(as_text=True)
-    assert "Tu solicitud está pendiente de revisión." in page
-    assert "Conserva este ticket" in page
+    assert "Hemos recibido tu solicitud." in page
+    assert "Conserva este número de referencia" in page
     ticket = _ticket_from(page)
     assert len(ticket) >= 24
 
@@ -240,11 +242,12 @@ def test_servicio_inexistente_o_inactivo_es_rechazado(public_app, service_value)
         assert db.session.query(Appointment).count() == 0
 
 
-def test_modalidad_invalida_es_rechazada(public_app):
+@pytest.mark.parametrize("modality", ["in_person", "hybrid", "a domicilio"])
+def test_modalidad_no_virtual_es_rechazada(public_app, modality):
     client = public_app.test_client()
     response = client.post(
         "/",
-        data=_valid_form(client, _service_id(public_app), modality="a domicilio"),
+        data=_valid_form(client, _service_id(public_app), modality=modality),
     )
 
     assert response.status_code == 400

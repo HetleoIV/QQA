@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#142b49">
     <meta name="page-type" content="service">
     <meta name="site-kind" content="other">
-    <meta name="description" content="SUNQU Consultoría Integral, una propuesta académica de orientación interdisciplinaria en Ica.">
+    <meta name="description" content="SUNQU Consultoría Integral brinda orientación profesional en modalidad virtual.">
     <title>{% block title %}SUNQU — Consultoría Integral{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
@@ -45,13 +45,10 @@
       <div class="wrap footer-main">
         <div>
           <a class="footer-brand" href="{{ url_for('public.inicio') }}#inicio">SUNQU</a>
-          <p>Propuesta académica de consultoría integral.</p>
+          <p>Orientación profesional en modalidad virtual.</p>
         </div>
         <a class="button button-small button-light" href="{{ url_for('admin.dashboard') }}">Acceso administrativo</a>
         <a class="footer-top" href="{{ url_for('public.inicio') }}#inicio">Volver al inicio <span aria-hidden="true">↑</span></a>
-      </div>
-      <div class="wrap footer-meta">
-        <p>Propuesta académica. No representa un centro actualmente operativo.</p>
       </div>
     </footer>
   </body>

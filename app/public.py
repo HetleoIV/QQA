@@ -17,7 +17,7 @@ from flask import (
 from sqlalchemy.exc import SQLAlchemyError
 
 from .extensions import db
-from .models import APPOINTMENT_MODALITIES, Appointment, Service
+from .models import Appointment, Service
 
 
 public_bp = Blueprint("public", __name__)
@@ -25,9 +25,7 @@ logger = logging.getLogger(__name__)
 
 _CSRF_SESSION_KEY = "public_appointment_csrf"
 _MODALITY_LABELS = {
-    "in_person": "Presencial",
     "virtual": "Virtual",
-    "hybrid": "Híbrida",
 }
 _EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
 _PHONE_PATTERN = re.compile(r"^[+()\d\s.-]{7,32}$")
@@ -131,7 +129,7 @@ def inicio():
                     errors["service"] = "Selecciona un servicio disponible."
 
                 modality = form_data["modality"].strip()
-                if modality not in APPOINTMENT_MODALITIES:
+                if modality not in _MODALITY_LABELS:
                     errors["modality"] = "Selecciona una modalidad válida."
 
                 name_parts = {
