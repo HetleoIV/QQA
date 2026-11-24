@@ -197,7 +197,7 @@
               {% if errors.get('first_name') %}<span class="field-error" id="first-name-error" role="alert">{{ errors.first_name }}</span>{% endif %}
             </div>
             <div class="form-row">
-              <label for="second_name">Segundo nombre <span>(opcional)</span></label>
+              <label for="second_name">Segundo nombre</label>
               <input id="second_name" name="second_name" type="text" autocomplete="additional-name" maxlength="80" value="{{ form_data.get('second_name', '') }}"{% if not csrf_token %} disabled{% endif %}{% if errors.get('second_name') %} aria-invalid="true" aria-describedby="second-name-error"{% endif %}>
               {% if errors.get('second_name') %}<span class="field-error" id="second-name-error" role="alert">{{ errors.second_name }}</span>{% endif %}
             </div>
@@ -222,7 +222,7 @@
             </div>
             <div class="form-row">
               <label for="phone">Teléfono</label>
-              <input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="32" value="{{ form_data.get('phone', '') }}" placeholder="Ej. +51 900 123 456" required{% if not csrf_token %} disabled{% endif %}{% if errors.get('phone') %} aria-invalid="true" aria-describedby="phone-error"{% endif %}>
+              <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" minlength="7" maxlength="9" pattern="[0-9]{7,9}" value="{{ form_data.get('phone', '') }}" placeholder="Ej. 987654321" required{% if not csrf_token %} disabled{% endif %}{% if errors.get('phone') %} aria-invalid="true" aria-describedby="phone-error"{% endif %}>
               {% if errors.get('phone') %}<span class="field-error" id="phone-error" role="alert">{{ errors.phone }}</span>{% endif %}
             </div>
           </div>
@@ -235,7 +235,6 @@
           </div>
           {% if not services and not form_notice %}<p class="form-alert" role="status">No hay servicios disponibles para solicitar una cita en este momento.</p>{% endif %}
           <button class="button form-button" id="booking-submit" type="submit"{% if not csrf_token or not services %} disabled{% endif %}>Enviar solicitud <span aria-hidden="true">↗</span></button>
-          <p class="form-help">No incluyas motivos de consulta, diagnósticos ni otra información sensible.</p>
         </form>
       </div>
     </div>

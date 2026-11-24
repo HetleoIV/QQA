@@ -70,7 +70,7 @@ def _valid_form(client, service_id, **changes):
         "first_surname": "de",
         "second_surname": "prueba",
         "email": "persona@example.test",
-        "phone": "+51 900 123 456",
+        "phone": "987654321",
         "consent": "yes",
     }
     form.update(changes)
@@ -168,7 +168,7 @@ def test_solicitud_valida_guarda_cita_pendiente_sin_asignacion_y_muestra_ticket(
         assert appointment.first_surname == "de"
         assert appointment.second_surname == "prueba"
         assert appointment.contact_email == "persona@example.test"
-        assert appointment.contact_phone == "+51 900 123 456"
+        assert appointment.contact_phone == "987654321"
         assert appointment.status == "pending"
         assert appointment.professional_id is None
         assert appointment.availability_slot_id is None
@@ -344,7 +344,7 @@ def test_csrf_ausente_se_rechaza_y_registra_cookie_ausente(public_app, caplog):
             "first_surname": "de",
             "second_surname": "prueba",
             "email": "persona@example.test",
-            "phone": "+51 900 123 456",
+            "phone": "987654321",
             "consent": "yes",
         },
     )

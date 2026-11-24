@@ -28,7 +28,7 @@ _MODALITY_LABELS = {
     "virtual": "Virtual",
 }
 _EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
-_PHONE_PATTERN = re.compile(r"^[+()\d\s.-]{7,32}$")
+_PHONE_PATTERN = re.compile(r"^[0-9]{7,9}$")
 
 
 @public_bp.after_request
@@ -158,12 +158,8 @@ def inicio():
                     errors["email"] = "Escribe un correo electrónico válido."
 
                 contact_phone = form_data["phone"].strip()
-                phone_digits = re.sub(r"\D", "", contact_phone)
-                if (
-                    not _PHONE_PATTERN.fullmatch(contact_phone)
-                    or not 7 <= len(phone_digits) <= 15
-                ):
-                    errors["phone"] = "Escribe un teléfono válido con código de país si corresponde."
+                if not _PHONE_PATTERN.fullmatch(contact_phone):
+                    errors["phone"] = "Escribe un teléfono de 7 a 9 dígitos, solo números."
 
                 if form_data["consent"] != "yes":
                     errors["consent"] = "Debes aceptar el aviso de privacidad para continuar."

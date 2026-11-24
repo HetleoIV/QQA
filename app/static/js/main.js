@@ -17,6 +17,13 @@ if (menuButton && navigation) {
 }
 
 const bookingForm = document.querySelector("#booking-form");
+const phoneInput = document.querySelector("#phone");
+
+if (phoneInput) {
+  phoneInput.addEventListener("input", () => {
+    phoneInput.value = phoneInput.value.replace(/[^0-9]/g, "").slice(0, 9);
+  });
+}
 
 if (bookingForm) {
   bookingForm.addEventListener("submit", () => {
